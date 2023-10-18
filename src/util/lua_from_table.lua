@@ -7,7 +7,6 @@ local index_order = {
 	stats = -11,
 
 	name = -10,
-	new_format = -9.9,
 	display = -8,
 
 	attach_type = -7,
