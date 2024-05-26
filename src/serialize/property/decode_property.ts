@@ -72,9 +72,9 @@ const ENCODING_FUNCTIONS: {
 		(value) => typeIs(value, "Color3"),
 		(buffer, value) => {
 			let color = value as Color3;
-			buffer.writeUInt8(math.round(color.R / 255));
-			buffer.writeUInt8(math.round(color.G / 255));
-			buffer.writeUInt8(math.round(color.B / 255));
+			buffer.writeUInt8(math.round(color.R * 255));
+			buffer.writeUInt8(math.round(color.G * 255));
+			buffer.writeUInt8(math.round(color.B * 255));
 		},
 		(buffer, index, instance) =>
 			(instance[index] = new Color3(
