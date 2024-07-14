@@ -185,19 +185,19 @@ export namespace ModfilePackager {
 			if (!data) throw `${folder.Name} is missing a data model`;
 
 			mark_instance_ids(folder);
+			const data_id = data.GetAttribute(INSTANCE_ID_TAG) as number;
 
 			WRITE_MODULE(SerializeMapDeclaration, buffer, {
 				attachments: [],
-				instance_id: next_instance_id,
+				instance_id: data_id,
 				properties: req_script_as<Deadline.gameMapProperties>(folder, "properties"),
 				instance: data,
 			});
 
-			mark_instance_ids(data);
 			WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
 				position: {
 					kind: "attachment_root",
-					instance_id: data.GetAttribute(INSTANCE_ID_TAG) as number,
+					instance_id: data_id,
 					parent_id: next_instance_id,
 				},
 				instance: data,
@@ -228,6 +228,8 @@ export namespace ModfilePackager {
 					"runtime_properties",
 				);
 
+				mark_instance_ids(model);
+
 				WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
 					instance_id: next_instance_id,
 					parent_class: folder.Name,
@@ -235,7 +237,6 @@ export namespace ModfilePackager {
 					runtime_properties: runtime_properties,
 				});
 
-				mark_instance_ids(model);
 				WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
 					position: {
 						kind: "attachment_root",
