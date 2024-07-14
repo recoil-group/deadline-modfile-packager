@@ -99,8 +99,8 @@ export namespace Modfile {
 	};
 }
 
-let next_attachment_id = 0;
-
+let next_attachment_instance_id = 0;
+let next_instance_id = 0;
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
 	export const PACKAGER_VERSION = 1;
@@ -119,7 +119,8 @@ export namespace ModfilePackager {
 	export function encode(model: Instance): string {
 		print("encoding", model.Name);
 
-		next_attachment_id = 0;
+		next_attachment_instance_id = 0;
+		next_instance_id = 0;
 
 		let buffer = BitBuffer("");
 		buffer.writeUInt8(PACKAGER_VERSION);
@@ -169,11 +170,10 @@ export namespace ModfilePackager {
 	}
 
 	function mark_instance_ids(model: Instance): void {
-		let id = 0;
-		model.SetAttribute(INSTANCE_ID_TAG, id);
+		model.SetAttribute(INSTANCE_ID_TAG, next_instance_id);
 		model.GetDescendants().forEach((element) => {
-			id += 1;
-			element.SetAttribute(INSTANCE_ID_TAG, id);
+			next_instance_id += 1;
+			element.SetAttribute(INSTANCE_ID_TAG, next_instance_id);
 		});
 	}
 
@@ -190,7 +190,7 @@ export namespace ModfilePackager {
 
 			WRITE_MODULE(SerializeMapDeclaration, buffer, {
 				attachments: [],
-				instance_id: next_attachment_id,
+				instance_id: next_attachment_instance_id,
 				properties: req_script_as<Deadline.gameMapProperties>(folder, "properties"),
 				instance: data,
 			});
@@ -200,7 +200,7 @@ export namespace ModfilePackager {
 				position: {
 					kind: "attachment_root",
 					instance_id: data.GetAttribute(INSTANCE_ID_TAG) as number,
-					parent_id: next_attachment_id,
+					parent_id: next_attachment_instance_id,
 				},
 				instance: data,
 			});
@@ -231,7 +231,7 @@ export namespace ModfilePackager {
 				);
 
 				WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
-					instance_id: next_attachment_id,
+					instance_id: next_attachment_instance_id,
 					parent_class: folder.Name,
 					properties: properties,
 					runtime_properties: runtime_properties,
@@ -242,12 +242,12 @@ export namespace ModfilePackager {
 					position: {
 						kind: "attachment_root",
 						instance_id: model.GetAttribute(INSTANCE_ID_TAG) as number,
-						parent_id: next_attachment_id,
+						parent_id: next_attachment_instance_id,
 					},
 					instance: model,
 				});
 
-				next_attachment_id += 1;
+				next_attachment_instance_id += 1;
 			});
 		});
 	}
