@@ -1,8 +1,24 @@
 import { supportedEncoderValueType } from "./property/decode_property";
 
-export const INSTANCE_PROPERTY_MAP: {
-	[index: string]: { [index: string]: supportedEncoderValueType } | undefined;
-} = {
+type propertyData = { [index: string]: supportedEncoderValueType } | undefined;
+
+const GUI_OBJECT: propertyData = {
+	Position: "UDim2",
+	Size: "UDim2",
+	AnchorPoint: "Vector2",
+	BackgroundColor3: "Color3",
+	BackgroundTransparency: "number",
+};
+
+const BASEPART: propertyData = {
+	Transparency: "number",
+	Reflectance: "number",
+	Material: "EnumItem",
+	Anchored: "boolean",
+	CFrame: "CFrame",
+	Size: "Vector3",
+};
+export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
 	Base: {
 		Name: "string",
 	},
@@ -20,14 +36,13 @@ export const INSTANCE_PROPERTY_MAP: {
 	// },
 
 	Model: {},
+	Folder: {},
 
 	Part: {
-		Transparency: "number",
-		Reflectance: "number",
-		Material: "EnumItem",
-		Anchored: "boolean",
-		CFrame: "CFrame",
-		Size: "Vector3",
+		...BASEPART,
+	},
+	WedgePart: {
+		...BASEPART,
 	},
 
 	Motor6D: {
@@ -42,28 +57,34 @@ export const INSTANCE_PROPERTY_MAP: {
 		Face: "EnumItem",
 	},
 	Frame: {
-		Position: "UDim2",
-		Size: "UDim2",
-		AnchorPoint: "Vector2",
-		BackgroundColor3: "Color3",
-		BackgroundTransparency: "number",
+		...GUI_OBJECT,
 	},
 	CanvasGroup: {
-		Position: "UDim2",
-		Size: "UDim2",
-		AnchorPoint: "Vector2",
-		BackgroundColor3: "Color3",
-		BackgroundTransparency: "number",
+		...GUI_OBJECT,
 	},
 	ImageLabel: {
-		Position: "UDim2",
-		Size: "UDim2",
-		AnchorPoint: "Vector2",
-		BackgroundColor3: "Color3",
-		BackgroundTransparency: "number",
+		...GUI_OBJECT,
 		ImageColor3: "Color3",
 		Image: "string",
 	},
+	TextLabel: {
+		...GUI_OBJECT,
+		TextColor3: "Color3",
+		Text: "string",
+		TextSize: "number",
+		TextWrapped: "boolean",
+	},
+	Texture: {
+		Color3: "Color3",
+		OffsetStudsU: "number",
+		OffsetStudsV: "number",
+		StudsPerTileU: "number",
+		StudsPerTileV: "number",
+		Texture: "string",
+		Transparency: "number",
+		ZIndex: "number",
+	},
+	Attachment: {},
 	UICorner: {},
 	WeldConstraint: {
 		Part0: "Instance",

@@ -6,8 +6,10 @@ import { SerializeInstanceDeclaration } from "./serialize/type/instance";
 import { SerializeMetadataDeclaration } from "./serialize/type/metadata";
 import { InstanceReferenceSerialization } from "./serialize/property/InstanceReferenceSerialization";
 import { INSTANCE_ID_TAG } from "./util/constants";
+import { SerializeMapDeclaration } from "./serialize/type/map";
 
-// shit declared by the game itself
+// declared by the game itself
+// incomplete types
 export namespace Deadline {
 	export type attachmentClassData = {
 		name: string;
@@ -22,6 +24,29 @@ export namespace Deadline {
 		name: string;
 		// may be anything
 	};
+
+	export type gameMapProperties = {
+		description: string;
+		images: {
+			thumbnail_day: string;
+			thumbnail_night: string;
+		};
+
+		lamps: {
+			off_time: number;
+			on_time: number;
+		};
+		lighting_preset: string;
+
+		minimap: {
+			image: string;
+			size: number;
+		};
+
+		name: string;
+
+		sound_preset: string;
+	};
 }
 
 // modfile format spec
@@ -31,6 +56,7 @@ export namespace Modfile {
 	export type file = {
 		info?: Modfile.metadataDeclaration;
 		version: number;
+		map_declarations: Modfile.mapDeclaration[];
 		class_declarations: Modfile.classDeclaration[];
 		instance_declarations: Modfile.instanceDeclaration[];
 	};
@@ -61,11 +87,18 @@ export namespace Modfile {
 		runtime_properties: Deadline.runtimeAttachmentProperties;
 	};
 
+	export type mapDeclaration = {
+		instance_id: number; // ID of the root model instance
+		properties: Deadline.gameMapProperties;
+	};
+
 	// TODO distinction between ingame classes and modded classes
 	export type compiledClass = {
 		name: string;
 	};
 }
+
+let next_attachment_id = 0;
 
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
@@ -82,8 +115,10 @@ export namespace ModfilePackager {
 		return require(module) as T;
 	}
 
-	export const encode = (model: Instance) => {
+	export function encode(model: Instance): string {
 		print("encoding", model.Name);
+
+		next_attachment_id = 0;
 
 		let buffer = BitBuffer("");
 		buffer.writeUInt8(PACKAGER_VERSION);
@@ -97,64 +132,15 @@ export namespace ModfilePackager {
 		});
 
 		let attachments = model.FindFirstChild("attachments");
-		if (attachments) {
-			let attachment_classes = attachments.GetChildren();
-			let next_attachment_id = 0;
+		if (attachments) encode_attachments(attachments, buffer);
 
-			attachment_classes.forEach((folder) => {
-				print(`attachments/${folder.Name}`);
-				WRITE_MODULE(SerializeClassDeclaration, buffer, {
-					attachments: [],
-					properties: {
-						name: folder.Name,
-					},
-				});
-
-				folder.GetChildren().forEach((attachment) => {
-					print(`attachments/${folder.Name}/${attachment.Name}`);
-					let model = attachment.FindFirstChild("model");
-					if (!model) throw `${attachment.Name} is missing a model`;
-
-					let properties = req_script_as<Deadline.attachmentProperties>(attachment, "properties");
-					let runtime_properties = req_script_as<Deadline.runtimeAttachmentProperties>(
-						attachment,
-						"runtime_properties",
-					);
-
-					WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
-						instance_id: next_attachment_id,
-						parent_class: folder.Name,
-						properties: properties,
-						runtime_properties: runtime_properties,
-					});
-
-					let id = 0;
-					model.SetAttribute(INSTANCE_ID_TAG, id);
-					model.GetDescendants().forEach((element) => {
-						id += 1;
-						element.SetAttribute(INSTANCE_ID_TAG, id);
-					});
-
-					WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
-						position: {
-							kind: "attachment_root",
-							instance_id: model.GetAttribute(INSTANCE_ID_TAG) as number,
-							parent_id: next_attachment_id,
-						},
-						instance: model,
-					});
-
-					next_attachment_id += 1;
-				});
-			});
-		} else {
-			print("no attachments found");
-		}
+		let maps = model.FindFirstChild("maps");
+		if (maps) encode_maps(maps, buffer);
 
 		return buffer.dumpBase64();
-	};
+	}
 
-	export const decode_to_modfile = (input: string): string | Modfile.file => {
+	export function decode_to_modfile(input: string): string | Modfile.file {
 		print("decoding to modfile");
 
 		let start_time = tick();
@@ -165,6 +151,7 @@ export namespace ModfilePackager {
 			version: buffer.readUInt8(),
 			class_declarations: [],
 			instance_declarations: [],
+			map_declarations: [],
 		};
 
 		if (file.version !== PACKAGER_VERSION)
@@ -178,9 +165,93 @@ export namespace ModfilePackager {
 		print((tick() - start_time) * 1000, "ms to finish");
 
 		return file;
-	};
+	}
 
-	const set_instance_parents = (modfile: Modfile.file) => {
+	function mark_instance_ids(model: Instance): void {
+		let id = 0;
+		model.SetAttribute(INSTANCE_ID_TAG, id);
+		model.GetDescendants().forEach((element) => {
+			id += 1;
+			element.SetAttribute(INSTANCE_ID_TAG, id);
+		});
+	}
+
+	function encode_maps(maps: Instance, buffer: BitBuffer): void {
+		let map_data = maps.GetChildren();
+
+		map_data.forEach((folder) => {
+			print(`maps/${folder.Name}`);
+
+			let data = folder.FindFirstChild("data");
+			if (!data) throw `${folder.Name} is missing a data model`;
+
+			mark_instance_ids(folder);
+
+			WRITE_MODULE(SerializeMapDeclaration, buffer, {
+				attachments: [],
+				instance_id: next_attachment_id,
+				properties: req_script_as<Deadline.gameMapProperties>(folder, "properties"),
+				instance: data,
+			});
+
+			mark_instance_ids(data);
+			WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
+				position: {
+					kind: "attachment_root",
+					instance_id: data.GetAttribute(INSTANCE_ID_TAG) as number,
+					parent_id: next_attachment_id,
+				},
+				instance: data,
+			});
+		});
+	}
+
+	function encode_attachments(attachments: Instance, buffer: BitBuffer): void {
+		let attachment_classes = attachments.GetChildren();
+
+		attachment_classes.forEach((folder) => {
+			print(`attachments/${folder.Name}`);
+			WRITE_MODULE(SerializeClassDeclaration, buffer, {
+				attachments: [],
+				properties: {
+					name: folder.Name,
+				},
+			});
+
+			folder.GetChildren().forEach((attachment) => {
+				print(`attachments/${folder.Name}/${attachment.Name}`);
+				let model = attachment.FindFirstChild("model");
+				if (!model) throw `${attachment.Name} is missing a model`;
+
+				let properties = req_script_as<Deadline.attachmentProperties>(attachment, "properties");
+				let runtime_properties = req_script_as<Deadline.runtimeAttachmentProperties>(
+					attachment,
+					"runtime_properties",
+				);
+
+				WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
+					instance_id: next_attachment_id,
+					parent_class: folder.Name,
+					properties: properties,
+					runtime_properties: runtime_properties,
+				});
+
+				mark_instance_ids(model);
+				WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
+					position: {
+						kind: "attachment_root",
+						instance_id: model.GetAttribute(INSTANCE_ID_TAG) as number,
+						parent_id: next_attachment_id,
+					},
+					instance: model,
+				});
+
+				next_attachment_id += 1;
+			});
+		});
+	}
+
+	function set_instance_parents(modfile: Modfile.file): void {
 		let { instance_declarations } = modfile;
 
 		for (const [_, child] of pairs(instance_declarations)) {
@@ -190,7 +261,7 @@ export namespace ModfilePackager {
 				if (child.position.parent_id === parent.position.instance_id) child.instance.Parent = parent.instance;
 			}
 		}
-	};
+	}
 }
 
 export namespace ModfileProvider {

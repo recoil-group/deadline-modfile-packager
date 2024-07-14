@@ -27,13 +27,13 @@ export function WRITE_MODULE<T>(module: Serializer<T>, buffer: BitBuffer, data: 
 export function DECODE_MODULE<T>(file: Modfile.file, buffer: BitBuffer): boolean | undefined {
 	let id = buffer.readUInt8();
 
-	if (id) {
-		let serializer = serializers.find((value) => value.id === id);
-		if (!serializer) throw `invalid module ID ${id}`;
+	if (!id) return;
 
-		print("parsing", serializer.name);
-		serializer.decode(file, buffer);
+	let serializer = serializers.find((value) => value.id === id);
+	if (!serializer) throw `invalid module ID ${id}`;
 
-		return true;
-	}
+	print("parsing", serializer.name);
+	serializer.decode(file, buffer);
+
+	return true;
 }

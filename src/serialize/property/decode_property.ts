@@ -17,6 +17,24 @@ export type supportedEncoderValueType =
 
 export type forceIndex<T> = { [index: string]: T };
 
+// BitBuffer implementation of this is buggy
+function write_cframe(buffer: BitBuffer, value: CFrame) {
+	const [x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22] = value.GetComponents();
+
+	buffer.writeFloat32(x);
+	buffer.writeFloat32(y);
+	buffer.writeFloat32(z);
+	buffer.writeFloat32(r00);
+	buffer.writeFloat32(r01);
+	buffer.writeFloat32(r02);
+	buffer.writeFloat32(r10);
+	buffer.writeFloat32(r11);
+	buffer.writeFloat32(r12);
+	buffer.writeFloat32(r20);
+	buffer.writeFloat32(r21);
+	buffer.writeFloat32(r22);
+}
+
 const string_is_encode_id = (value: unknown): value is supportedEncoderValueType => {
 	return typeIs(value, "string") && ENCODE_VALUE_IDS[value as supportedEncoderValueType] !== undefined;
 };
@@ -45,7 +63,7 @@ const ENCODING_FUNCTIONS: {
 	],
 	CFrame: [
 		(value) => typeIs(value, "CFrame"),
-		(buffer, value) => buffer.writeCFrame(value as CFrame),
+		(buffer, value) => write_cframe(buffer, value as CFrame),
 		(buffer, index, instance) => (instance[index] = buffer.readCFrame()),
 	],
 	UDim2: [
