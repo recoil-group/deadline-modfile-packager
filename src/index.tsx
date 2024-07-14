@@ -229,9 +229,10 @@ export namespace ModfilePackager {
 				);
 
 				mark_instance_ids(model);
+				const instance_id = model.GetAttribute(INSTANCE_ID_TAG) as number;
 
 				WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
-					instance_id: next_instance_id,
+					instance_id: instance_id,
 					parent_class: folder.Name,
 					properties: properties,
 					runtime_properties: runtime_properties,
@@ -240,7 +241,7 @@ export namespace ModfilePackager {
 				WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
 					position: {
 						kind: "attachment_root",
-						instance_id: model.GetAttribute(INSTANCE_ID_TAG) as number,
+						instance_id: instance_id,
 						parent_id: next_instance_id,
 					},
 					instance: model,

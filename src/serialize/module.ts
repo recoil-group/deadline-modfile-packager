@@ -34,7 +34,6 @@ export function DECODE_MODULE<T>(file: Modfile.file, buffer: BitBuffer): boolean
 	let serializer = serializers.find((value) => value.id === id);
 	if (!serializer) throw `invalid module ID ${id}`;
 
-	print("parsing", serializer.name);
 	serializer.decode(file, buffer);
 
 	return true;

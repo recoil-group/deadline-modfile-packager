@@ -1,9 +1,5 @@
 # deadline-modfile-packager
 
-## NOTICE
-
-Currently the plugin is not public and so is the format. [You may view currently public modfiles here](https://github.com/blackshibe/deadline-insitux-core-scripts/tree/master/modfile)
-
 Main library for encoding and decoding modfiles to be used as importable mods in Deadline
 
 # Supported features

@@ -16,6 +16,12 @@ const BASEPART: propertyData = {
 	Material: "EnumItem",
 	Anchored: "boolean",
 	CFrame: "CFrame",
+	Color: "Color3",
+	CollisionGroup: "string",
+	CanQuery: "boolean",
+	CanTouch: "boolean",
+	CanCollide: "boolean",
+	Locked: "boolean",
 	Size: "Vector3",
 };
 export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
