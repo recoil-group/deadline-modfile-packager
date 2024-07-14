@@ -5,6 +5,8 @@ import { Serializer } from "../module";
 import { decode_instance_property, encode_instance_property, forceIndex } from "../property/decode_property";
 import { InstanceReferenceSerialization } from "../property/InstanceReferenceSerialization";
 
+type whatever = { [index: string]: any };
+
 export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaration> = {
 	name: "Instance",
 	id: 5,
@@ -29,18 +31,29 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		}
 
 		// write properties
+		let default_instance = new Instance(instance.ClassName as keyof CreatableInstances);
 		let property_count = 0;
-		for (const [] of pairs(properties_to_write)) property_count += 1;
+		let property_list: string[] = [];
+
+		for (const [_index] of pairs(properties_to_write)) {
+			const index = _index as string;
+
+			if ((instance as unknown as whatever)[index] === (default_instance as unknown as whatever)[index]) continue;
+			property_count += 1;
+			property_list.push(index);
+		}
 
 		buffer.writeUInt8(property_count);
-		for (const [index, value] of pairs(properties_to_write)) {
+		for (const [_, index] of pairs(property_list)) {
 			encode_instance_property(
 				buffer,
-				index as string,
-				value,
+				index,
+				properties_to_write[index],
 				(instance as unknown as forceIndex<string>)[index],
 			);
 		}
+
+		default_instance.Destroy();
 
 		// write children
 		for (const [_, value] of pairs(instance.GetChildren())) {
