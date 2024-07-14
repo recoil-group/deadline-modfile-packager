@@ -44,6 +44,7 @@ export namespace Deadline {
 		};
 
 		name: string;
+		code: string;
 
 		sound_preset: string;
 	};

@@ -9,6 +9,7 @@ export const SerializeMapDeclaration: Serializer<{
 	id: 2,
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
+		bitbuffer.writeString(declaration.properties.code);
 		bitbuffer.writeUInt16(declaration.instance_id);
 		bitbuffer.writeString(declaration.properties.description);
 		bitbuffer.writeString(declaration.properties.lighting_preset);
@@ -22,6 +23,7 @@ export const SerializeMapDeclaration: Serializer<{
 	},
 	decode: (modfile, bitbuffer) => {
 		let name = bitbuffer.readString();
+		let code = bitbuffer.readString();
 		let instance_id = bitbuffer.readUInt16();
 		let description = bitbuffer.readString();
 		let lighting_preset = bitbuffer.readString();
@@ -36,6 +38,7 @@ export const SerializeMapDeclaration: Serializer<{
 		let declaration: Modfile.mapDeclaration = {
 			properties: {
 				name,
+				code,
 				description,
 				lighting_preset,
 				sound_preset,

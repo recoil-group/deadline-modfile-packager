@@ -21,6 +21,7 @@ export type forceIndex<T> = { [index: string]: T };
 function write_cframe(buffer: BitBuffer, value: CFrame) {
 	const [x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22] = value.GetComponents();
 
+	buffer.writeByte(0);
 	buffer.writeFloat32(x);
 	buffer.writeFloat32(y);
 	buffer.writeFloat32(z);
