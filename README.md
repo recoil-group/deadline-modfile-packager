@@ -38,9 +38,10 @@ Main library for encoding and decoding modfiles to be used as importable mods in
 -   Get a private Deadline server
 -   Get the plugin from the releases page. there's a place file you can view a test mod from as well
 -   Open the template place provided in the releases page
--   Open the plugin, select workspace.DeadlineTestMod
--   Click "export selected model as mod"
--   Open the script you exported in a .txt file
+-   Go to plugins, Local Plugins, drop the plugin file in there, restart studio
+-   Open the plugin (Plugins->DeadlineSDK), click on workspace.DeadlineTestMod
+-   Click "export selected model as mod" in the plugin menu
+-   Open the script you exported in notepad, copy the contents
 -   Paste it to the 'server luau console' in-game (accessible after pressing `)
 -   The modfile should load
 -   Attachments are accessible immediately. You can set the map with `map.set_map("map_name")`
