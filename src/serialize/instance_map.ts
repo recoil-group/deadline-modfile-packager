@@ -2,6 +2,7 @@ import { supportedEncoderValueType } from "./property/decode_property";
 
 type propertyData = { [index: string]: supportedEncoderValueType } | undefined;
 
+// TODO do this procedurally
 const GUI_OBJECT: propertyData = {
 	Position: "UDim2",
 	Size: "UDim2",
@@ -24,6 +25,13 @@ const BASEPART: propertyData = {
 	Locked: "boolean",
 	Size: "Vector3",
 };
+
+const LIGHT: propertyData = {
+	Brightness: "number",
+	Color: "Color3",
+	Range: "number",
+};
+
 export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
 	Base: {
 		Name: "string",
@@ -90,10 +98,31 @@ export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
 		Transparency: "number",
 		ZIndex: "number",
 	},
+	PointLight: {
+		...LIGHT,
+		Face: "EnumItem",
+	},
+	SpotLight: {
+		...LIGHT,
+		Face: "EnumItem",
+		Angle: "number",
+	},
+	SurfaceLight: {
+		...LIGHT,
+		Face: "EnumItem",
+		Angle: "number",
+	},
+	Decal: {
+		Color3: "Color3",
+		Texture: "string",
+		Transparency : "number",
+		ZIndex: "number",
+	},
 	Attachment: {},
 	UICorner: {},
 	WeldConstraint: {
 		Part0: "Instance",
 		Part1: "Instance",
 	},
+
 };

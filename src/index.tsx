@@ -10,6 +10,7 @@ import { SerializeMapDeclaration } from "./serialize/type/map";
 
 // declared by the game itself
 // incomplete types
+
 export namespace Deadline {
 	export type attachmentClassData = {
 		name: string;
