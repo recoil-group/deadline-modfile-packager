@@ -64,7 +64,7 @@ const ENCODING_FUNCTIONS: {
 	],
 	CFrame: [
 		(value) => typeIs(value, "CFrame"),
-		(buffer, value) => write_cframe(buffer, value as CFrame),
+		(buffer, value) => buffer.writeCFrame(value as CFrame),
 		(buffer, index, instance) => (instance[index] = buffer.readCFrame()),
 	],
 	UDim2: [

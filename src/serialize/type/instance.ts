@@ -1,6 +1,6 @@
 import { Modfile } from "../..";
 import { INSTANCE_ID_TAG } from "../../util/constants";
-import { INSTANCE_PROPERTY_MAP } from "../instance_map";
+import { INSTANCE_CLASS_MAP, INSTANCE_PROPERTY_MAP, instanceClass } from "../instance_map";
 import { Serializer } from "../module";
 import { decode_instance_property, encode_instance_property, forceIndex } from "../property/decode_property";
 import { InstanceReferenceSerialization } from "../property/InstanceReferenceSerialization";
@@ -13,21 +13,23 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 	write: ({ instance, position }, buffer) => {
 		print("serializing", instance.GetFullName());
 
-		let properties_to_write = INSTANCE_PROPERTY_MAP[instance.ClassName];
+		let properties_to_write = INSTANCE_PROPERTY_MAP[instance.ClassName as instanceClass];
 		if (!properties_to_write) throw `can't serialize: unsupported instance type: ${instance.ClassName}`;
 
 		// write id
 		{
 			print(`writing instance id ${position.instance_id}`);
-			buffer.writeUnsigned(1, position.kind === "attachment_root" ? 1 : 0);
+			buffer.writeByte(position.kind === "attachment_root" ? 1 : 0);
 			buffer.writeUInt16(position.parent_id);
 			buffer.writeUInt16(position.instance_id);
 		}
 
 		// write general info
 		{
-			buffer.writeString(instance.ClassName);
-			buffer.writeString(instance.Name);
+			// optimize: index to the class instead of the class itself
+			const index = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
+			buffer.writeUInt8(index);
+			buffer.writeString(instance.Name === instance.ClassName ? "" : instance.Name);
 		}
 
 		// write properties
@@ -35,10 +37,11 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		let property_count = 0;
 		let property_list: string[] = [];
 
+		// optimize: only write properties that are different from the default instance
 		for (const [_index] of pairs(properties_to_write)) {
 			const index = _index as string;
 
-			if ((instance as unknown as whatever)[index] === (default_instance as unknown as whatever)[index]) continue;
+			if ((instance as whatever)[index] === (default_instance as whatever)[index]) continue;
 			property_count += 1;
 			property_list.push(index);
 		}
@@ -76,11 +79,12 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		let parent_id = buffer.readUInt16();
 		let instance_id = buffer.readUInt16();
 
-		let class_name = buffer.readString();
+		let class_name_index = buffer.readUInt8();
 		let name = buffer.readString();
 
-		let properties_to_write = INSTANCE_PROPERTY_MAP[class_name];
-		if (!properties_to_write) throw `can't decode: unsupported instance type: ${class_name}`;
+		let class_name = INSTANCE_CLASS_MAP[class_name_index];
+		let properties_to_write = INSTANCE_PROPERTY_MAP[class_name as instanceClass];
+		if (!properties_to_write) throw `can't decode: unsupported instance type index: ${class_name_index}`;
 
 		let instance = new Instance(class_name as keyof CreatableInstances);
 		instance.Name = name;

@@ -24,7 +24,29 @@ const BASEPART: propertyData = {
 	Locked: "boolean",
 	Size: "Vector3",
 };
-export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
+
+export const INSTANCE_CLASS_MAP = [
+	"Base",
+	"SpecialMesh",
+	"Model",
+	"Folder",
+	"Part",
+	"WedgePart",
+	"Motor6D",
+	"SurfaceGui",
+	"Frame",
+	"CanvasGroup",
+	"ImageLabel",
+	"TextLabel",
+	"Texture",
+	"Attachment",
+	"UICorner",
+	"WeldConstraint",
+] as const;
+
+export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
+
+export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } = {
 	Base: {
 		Name: "string",
 	},
@@ -35,11 +57,6 @@ export const INSTANCE_PROPERTY_MAP: { [index: string]: propertyData } = {
 		MeshId: "string",
 		Scale: "Vector3",
 	},
-
-	// MeshPart: {
-	// 	TextureID: "string",
-	// 	MeshId: "string",
-	// },
 
 	Model: {},
 	Folder: {},
