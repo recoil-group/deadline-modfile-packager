@@ -64,7 +64,21 @@ const ENCODING_FUNCTIONS: {
 	],
 	CFrame: [
 		(value) => typeIs(value, "CFrame"),
-		(buffer, value) => buffer.writeCFrame(value as CFrame),
+		(buffer, value) => {
+			// Sometimes writing the CFrame breaks somehow on the first byte written.
+			// This is a problem with the bitbuffer implementation, but from what I've seen
+			// each one has quirks and my homemade one doesn't serialize CFrames
+			// Instead try to do it in the conservative way and if it fails just do it in the naive way
+
+			let [success] = pcall(() => {
+				buffer.writeCFrame(value as CFrame);
+			});
+
+			if (!success) {
+				warn("failed to write CFrame with axis aligned flag, writing without it");
+				write_cframe(buffer, value as CFrame);
+			}
+		},
 		(buffer, index, instance) => (instance[index] = buffer.readCFrame()),
 	],
 	UDim2: [

@@ -7,6 +7,8 @@ import { SerializeMetadataDeclaration } from "./serialize/type/metadata";
 import { InstanceReferenceSerialization } from "./serialize/property/InstanceReferenceSerialization";
 import { INSTANCE_ID_TAG } from "./util/constants";
 import { SerializeMapDeclaration } from "./serialize/type/map";
+import { Zlib } from "@rbxts/zlib";
+import base64 from "./util/base64";
 
 // declared by the game itself
 // incomplete types
@@ -121,11 +123,11 @@ export namespace ModfilePackager {
 
 		next_instance_id = 0;
 
-		let buffer = BitBuffer("");
-		buffer.writeUInt8(PACKAGER_VERSION);
+		let encode_buffer = BitBuffer("");
+		encode_buffer.writeUInt8(PACKAGER_VERSION);
 
 		let properties = req_script_as<Modfile.properties>(model, "info");
-		WRITE_MODULE(SerializeMetadataDeclaration, buffer, {
+		WRITE_MODULE(SerializeMetadataDeclaration, encode_buffer, {
 			name: properties.name || "No name",
 			description: properties.description || "No description",
 			author: properties.author || "No author",
@@ -133,23 +135,34 @@ export namespace ModfilePackager {
 		});
 
 		let attachments = model.FindFirstChild("attachments");
-		if (attachments) encode_attachments(attachments, buffer);
+		if (attachments) encode_attachments(attachments, encode_buffer);
 
 		let maps = model.FindFirstChild("maps");
-		if (maps) encode_maps(maps, buffer);
+		if (maps) encode_maps(maps, encode_buffer);
 
-		return buffer.dumpBase64();
+		const compressed = Zlib.Compress(encode_buffer.dumpString(), {
+			level: 9,
+		});
+
+		const input_buffer = buffer.fromstring(compressed);
+		const output_base64 = base64.encode(input_buffer);
+
+		// dumpstring has the least size overhead, zlib compresses very well, and base64 makes the output exportable
+		return buffer.tostring(output_base64);
 	}
 
 	export function decode_to_modfile(input: string): string | Modfile.file {
 		print("decoding to modfile");
 
-		let start_time = tick();
-		let buffer = BitBuffer();
-		buffer.writeBase64(input);
+		const start_time = tick();
+		const decode_buffer = BitBuffer();
+		const decode_data = buffer.fromstring(input);
+		base64.decode(decode_data);
+
+		decode_buffer.writeString(Zlib.Decompress(buffer.tostring(decode_data)));
 
 		let file: Modfile.file = {
-			version: buffer.readUInt8(),
+			version: decode_buffer.readUInt8(),
 			class_declarations: [],
 			instance_declarations: [],
 			map_declarations: [],
@@ -159,7 +172,7 @@ export namespace ModfilePackager {
 			return `invalid packager version. mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}`;
 
 		InstanceReferenceSerialization.reset_instance_cache();
-		while (DECODE_MODULE(file, buffer) && buffer.getLength() - buffer.getPointer() > 8) {}
+		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {}
 		set_instance_parents(file);
 		InstanceReferenceSerialization.set_instance_ids();
 

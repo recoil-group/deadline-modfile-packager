@@ -49,6 +49,10 @@ export const INSTANCE_CLASS_MAP = [
 	"Attachment",
 	"UICorner",
 	"WeldConstraint",
+	"PointLight",
+	"SpotLight",
+	"SurfaceLight",
+	"Decal",
 ] as const;
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
@@ -116,7 +120,6 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 	},
 	PointLight: {
 		...LIGHT,
-		Face: "EnumItem",
 	},
 	SpotLight: {
 		...LIGHT,
