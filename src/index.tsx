@@ -8,7 +8,6 @@ import { InstanceReferenceSerialization } from "./serialize/property/InstanceRef
 import { INSTANCE_ID_TAG } from "./util/constants";
 import { SerializeMapDeclaration } from "./serialize/type/map";
 import { Zlib } from "@rbxts/zlib";
-import base64 from "./util/base64";
 
 // declared by the game itself
 // incomplete types
@@ -144,22 +143,21 @@ export namespace ModfilePackager {
 			level: 9,
 		});
 
-		const input_buffer = buffer.fromstring(compressed);
-		const output_base64 = base64.encode(input_buffer);
+		const export_buffer = BitBuffer(compressed);
 
-		// dumpstring has the least size overhead, zlib compresses very well, and base64 makes the output exportable
-		return buffer.tostring(output_base64);
+		return export_buffer.dumpBase64();
 	}
 
 	export function decode_to_modfile(input: string): string | Modfile.file {
 		print("decoding to modfile");
 
 		const start_time = tick();
-		const decode_buffer = BitBuffer();
-		const decode_data = buffer.fromstring(input);
-		base64.decode(decode_data);
 
-		decode_buffer.writeString(Zlib.Decompress(buffer.tostring(decode_data)));
+		const import_buffer = BitBuffer();
+		import_buffer.writeBase64(input);
+
+		const contents = Zlib.Decompress(import_buffer.dumpString());
+		const decode_buffer = BitBuffer(contents);
 
 		let file: Modfile.file = {
 			version: decode_buffer.readUInt8(),

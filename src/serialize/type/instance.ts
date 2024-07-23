@@ -75,10 +75,9 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		}
 	},
 	decode: (modfile, buffer) => {
-		let parent_type = buffer.readUnsigned(1);
+		let parent_type = buffer.readByte();
 		let parent_id = buffer.readUInt16();
 		let instance_id = buffer.readUInt16();
-
 		let class_name_index = buffer.readUInt8();
 		let name = buffer.readString();
 
