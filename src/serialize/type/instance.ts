@@ -91,7 +91,6 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		InstanceReferenceSerialization.add_instance_to_cache(instance, instance_id);
 
 		let property_count = buffer.readUInt8();
-		print(`decoding ${class_name} ${name} ID ${instance_id} with ${property_count} properties`);
 		for (let i = 0; i < property_count; i++) decode_instance_property(buffer, instance);
 
 		let position: Modfile.instanceDeclaration["position"] = {
