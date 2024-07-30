@@ -8,6 +8,7 @@ import { InstanceReferenceSerialization } from "./serialize/property/InstanceRef
 import { INSTANCE_ID_TAG } from "./util/constants";
 import { SerializeMapDeclaration } from "./serialize/type/map";
 import { Zlib } from "@rbxts/zlib";
+import { SerializeScriptDeclaration } from "./serialize/type/script";
 
 // declared by the game itself
 // incomplete types
@@ -62,6 +63,7 @@ export namespace Modfile {
 		map_declarations: Modfile.mapDeclaration[];
 		class_declarations: Modfile.classDeclaration[];
 		instance_declarations: Modfile.instanceDeclaration[];
+		script_declarations: Modfile.scriptDeclaration[];
 	};
 
 	export type metadataDeclaration = {
@@ -88,6 +90,10 @@ export namespace Modfile {
 		parent_class: string;
 		properties: Deadline.attachmentProperties;
 		runtime_properties: Deadline.runtimeAttachmentProperties;
+	};
+
+	export type scriptDeclaration = {
+		source: string;
 	};
 
 	export type mapDeclaration = {
@@ -137,6 +143,14 @@ export namespace ModfilePackager {
 		let maps = model.FindFirstChild("maps");
 		if (maps) encode_maps(maps, encode_buffer);
 
+		let autorun = model.FindFirstChild("autorun") as ModuleScript | undefined;
+		if (autorun) {
+			// wtf
+			WRITE_MODULE(SerializeScriptDeclaration, encode_buffer, {
+				source: (autorun as unknown as { Source: string }).Source,
+			});
+		}
+
 		const compressed = Zlib.Compress(encode_buffer.dumpString(), {
 			level: 9,
 		});
@@ -160,6 +174,7 @@ export namespace ModfilePackager {
 			class_declarations: [],
 			instance_declarations: [],
 			map_declarations: [],
+			script_declarations: [],
 		};
 
 		if (file.version !== PACKAGER_VERSION)
