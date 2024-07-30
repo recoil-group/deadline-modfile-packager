@@ -25,7 +25,10 @@ Generally, you want to
     -   Open the template mod place provided in the releases page
     -   Go to plugins, click "Plugins Folder", drop the `Plugin.rbxmx` file in there
     -   Restart Studio
+    -   If you go to the View tab after opening a place in Roblox Studio, you should see a button called "Deadline modding"
+    -   Click it to open the plugin window
 -   Get a mod studio place you can work on ([examples here](https://github.com/recoil-group/deadline-modfile-packager/tree/master/examples/source))
+    -   Download one and open it with Roblox Studio
 -   Export the mod
     -   Open the plugin (Plugins->DeadlineSDK), click on workspace.DeadlineTestMod, or wherever your mod is located
     -   Click "export selected model as mod" in the plugin menu
