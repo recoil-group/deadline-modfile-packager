@@ -44,4 +44,5 @@ Generally, you want to
 -   Copy the FULL contents
 -   Paste them to the 'server luau console' in-game (accessible after pressing the ` key, right next to Escape on your keyboard)
 -   The modfile should load
--   Attachments are accessible immediately. You can set the map with `map.set_map("map_name")`
+-   Scroll down to see what map name you need to use to load any maps. It will say "use ... to set the map"
+-   Attachments are equippable immediately and will appear on any gun setups that happen to have modded attachments saved. You can also set the map with `map.set_map("map_name")` if you know the map code
