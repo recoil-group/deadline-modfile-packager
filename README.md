@@ -30,7 +30,8 @@ Generally, you want to
 -   Get a mod studio place you can work on ([examples here](https://github.com/recoil-group/deadline-modfile-packager/tree/master/examples/source))
     -   Download one and open it with Roblox Studio
 -   Export the mod
-    -   Open the plugin (Plugins->DeadlineSDK), click on workspace.DeadlineTestMod, or wherever your mod is located
+    -   Open the output (View->Output) to see any errors when exporting
+    -   Open the plugin (Plugins->DeadlineSDK in Studio), click on workspace.DeadlineTestMod in the explorer, or the mod folder you have
     -   Click "export selected model as mod" in the plugin menu
 -   Get a private Deadline server
     -   Dev branch and 0.23.0 VIP servers are free
@@ -39,7 +40,7 @@ Generally, you want to
 
 ## How to load a mod
 
--   Open the modfile script. This may be the one you exported in the section above or just one from the public mods section
+-   Open the modfile script/file. This may be the one you exported in the section above or just one from the public mods section
 -   Copy the FULL contents
 -   Paste them to the 'server luau console' in-game (accessible after pressing the ` key, right next to Escape on your keyboard)
 -   The modfile should load
