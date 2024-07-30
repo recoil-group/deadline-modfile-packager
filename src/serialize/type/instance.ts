@@ -57,9 +57,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 			// cba to support anything other than string
 			buffer.writeUInt8(tags.size());
-			for (const [_, value] of tags) {
-				buffer.writeString(value);
-			}
+			for (const tag of tags) buffer.writeString(tag);
 		}
 
 		// write properties
@@ -126,8 +124,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 		let tag_count = buffer.readUInt8();
 		for (let i = 0; i < tag_count; i++) {
-			let tag = buffer.readString();
-			tags.push(tag);
+			tags.push(buffer.readString());
 		}
 
 		let class_name = INSTANCE_CLASS_MAP[class_name_index];
