@@ -140,7 +140,9 @@ export const encode_instance_property = (
 	value: unknown,
 ) => {
 	let shortcut_index = INDEX_IDS[index];
-	buffer.writeUInt16(ENCODE_VALUE_IDS[value_type]);
+	if (!shortcut_index) warn(`no optimized index for property '${index}'`);
+
+	buffer.writeUInt8(ENCODE_VALUE_IDS[value_type]);
 	buffer.writeString(shortcut_index ? tostring(shortcut_index) : index);
 
 	const encode_function = ENCODING_FUNCTIONS[value_type];
@@ -155,7 +157,7 @@ export const encode_instance_property = (
 };
 
 export const decode_instance_property = (buffer: BitBuffer, instance: Instance) => {
-	let id = buffer.readUInt16();
+	let id = buffer.readUInt8();
 	let index = buffer.readString();
 	let actual_index = index;
 	for (const [index, value] of pairs(INDEX_IDS)) {

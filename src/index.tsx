@@ -58,7 +58,7 @@ export namespace Modfile {
 
 	export type file = {
 		info?: Modfile.metadataDeclaration;
-		version: number;
+		version: string;
 		map_declarations: Modfile.mapDeclaration[];
 		class_declarations: Modfile.classDeclaration[];
 		instance_declarations: Modfile.instanceDeclaration[];
@@ -104,7 +104,7 @@ export namespace Modfile {
 let next_instance_id = 0;
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
-	export const PACKAGER_VERSION = 1;
+	export const PACKAGER_VERSION = "0.23.0-dev-2";
 
 	export function req_script_as<T>(root: Instance, name: string): T {
 		let module = root.FindFirstChild(name);
@@ -118,12 +118,10 @@ export namespace ModfilePackager {
 	}
 
 	export function encode(model: Instance): string {
-		print("encoding", model.Name);
-
 		next_instance_id = 0;
 
 		let encode_buffer = BitBuffer("");
-		encode_buffer.writeUInt8(PACKAGER_VERSION);
+		encode_buffer.writeString(PACKAGER_VERSION);
 
 		let properties = req_script_as<Modfile.properties>(model, "info");
 		WRITE_MODULE(SerializeMetadataDeclaration, encode_buffer, {
@@ -149,8 +147,6 @@ export namespace ModfilePackager {
 	}
 
 	export function decode_to_modfile(input: string): string | Modfile.file {
-		print("decoding to modfile");
-
 		const start_time = tick();
 
 		const import_buffer = BitBuffer();
@@ -160,21 +156,21 @@ export namespace ModfilePackager {
 		const decode_buffer = BitBuffer(contents);
 
 		let file: Modfile.file = {
-			version: decode_buffer.readUInt8(),
+			version: decode_buffer.readString(),
 			class_declarations: [],
 			instance_declarations: [],
 			map_declarations: [],
 		};
 
 		if (file.version !== PACKAGER_VERSION)
-			return `invalid packager version. mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}`;
+			return `invalid package version. imported mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}. The mod you're using is likely too outdated to be used in deadline as-is. Look for a newer version.`;
 
 		InstanceReferenceSerialization.reset_instance_cache();
 		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {}
 		set_instance_parents(file);
 		InstanceReferenceSerialization.set_instance_ids();
 
-		print((tick() - start_time) * 1000, "ms to finish");
+		print((tick() - start_time) * 1000, "ms to decode modfile");
 
 		return file;
 	}

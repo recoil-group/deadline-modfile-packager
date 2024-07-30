@@ -6,7 +6,7 @@ export const SerializeMapDeclaration: Serializer<{
 	instance_id: number;
 }> = {
 	name: "Map",
-	id: 4,
+	id: 5,
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 		bitbuffer.writeString(declaration.properties.code);

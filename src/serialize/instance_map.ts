@@ -57,6 +57,7 @@ export const INSTANCE_CLASS_MAP = [
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
 
+// https://pastebin.com/raw/TFSU2s5e todo
 export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } = {
 	Base: {
 		Name: "string",
@@ -74,7 +75,6 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 
 	Part: {
 		...BASEPART,
-		Shape: "EnumItem",
 	},
 	WedgePart: {
 		...BASEPART,
@@ -138,7 +138,10 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Transparency: "number",
 		ZIndex: "number",
 	},
-	Attachment: {},
+	Attachment: {
+		Visible: "boolean",
+		WorldCFrame: "CFrame",
+	},
 	UICorner: {},
 	WeldConstraint: {
 		Part0: "Instance",

@@ -9,16 +9,13 @@ type whatever = { [index: string]: any };
 
 export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaration> = {
 	name: "Instance",
-	id: 5,
+	id: 4,
 	write: ({ instance, position }, buffer) => {
-		print("serializing", instance.GetFullName());
-
 		let properties_to_write = INSTANCE_PROPERTY_MAP[instance.ClassName as instanceClass];
 		if (!properties_to_write) throw `can't serialize: unsupported instance type: ${instance.ClassName}`;
 
 		// write id
 		{
-			print(`writing instance id ${position.instance_id}`);
 			buffer.writeByte(position.kind === "attachment_root" ? 1 : 0);
 			buffer.writeUInt16(position.parent_id);
 			buffer.writeUInt16(position.instance_id);
@@ -29,7 +26,10 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			// optimization: index to the class instead of the class itself
 			const index = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
 			buffer.writeUInt8(index);
-			buffer.writeString(instance.Name === instance.ClassName ? "" : instance.Name);
+
+			const use_simple_name = instance.Name === instance.ClassName || instance.Name === "";
+			buffer.writeBits(use_simple_name ? 1 : 0);
+			if (!use_simple_name) buffer.writeString(instance.Name);
 		}
 
 		// write attributes
@@ -98,7 +98,10 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		let parent_id = buffer.readUInt16();
 		let instance_id = buffer.readUInt16();
 		let class_name_index = buffer.readUInt8();
-		let name = buffer.readString();
+
+		let [simple_name] = buffer.readBits(1);
+		let name = "unnamed";
+		if (!simple_name) name = buffer.readString();
 
 		let attributes: { [index: string]: string } = {};
 		let attribute_count = buffer.readUInt8();

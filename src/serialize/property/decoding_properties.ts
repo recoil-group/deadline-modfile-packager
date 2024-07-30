@@ -13,6 +13,7 @@ export const ENCODE_VALUE_IDS: { [index in supportedEncoderValueType]: number } 
 	Vector2: 9,
 };
 
+// put property names here to optimize them
 export const INDEX_IDS: { [index: string]: number | undefined } = {
 	TextureID: 0,
 	MeshId: 1,
@@ -24,4 +25,28 @@ export const INDEX_IDS: { [index: string]: number | undefined } = {
 	CFrame: 7,
 	Size: 8,
 	Color3: 9,
+	TextColor3: 10,
+	Text: 11,
+	TextSize: 12,
+	TextWrapped: 13,
+	Color: 14,
+	CollisionGroup: 15,
+	CanQuery: 16,
+	CanTouch: 17,
+	CanCollide: 18,
+	Locked: 19,
+	Position: 20,
+	Brightness: 21,
+	AnchorPoint: 22,
+	BackgroundColor3: 23,
+	BackgroundTransparency: 24,
+	Range: 25,
+	Name: 26,
+	TextureId: 27,
+	OffsetStudsU: 29,
+	OffsetStudsV: 30,
+	StudsPerTileU: 31,
+	StudsPerTileV: 32,
+	Texture: 33,
+	ZIndex: 35,
 };
