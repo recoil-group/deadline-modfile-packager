@@ -121,7 +121,6 @@ const ENCODING_FUNCTIONS: {
 		(buffer, value) => {
 			let instance = value as Instance;
 			let instance_id = instance.GetAttribute(INSTANCE_ID_TAG);
-			print(instance.GetFullName());
 
 			if (instance_id === undefined) throw "no instance id found when serialziing";
 			if (!typeIs(instance_id, "number")) throw "invalid instance id when serializing";

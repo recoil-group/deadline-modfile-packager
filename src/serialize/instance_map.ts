@@ -74,6 +74,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 
 	Part: {
 		...BASEPART,
+		Shape: "EnumItem",
 	},
 	WedgePart: {
 		...BASEPART,

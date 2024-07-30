@@ -26,10 +26,29 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 		// write general info
 		{
-			// optimize: index to the class instead of the class itself
+			// optimization: index to the class instead of the class itself
 			const index = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
 			buffer.writeUInt8(index);
 			buffer.writeString(instance.Name === instance.ClassName ? "" : instance.Name);
+		}
+
+		// write attributes
+		{
+			let attributes = instance.GetAttributes();
+			let attribute_count = 0;
+
+			for (const [key] of attributes) {
+				if (key === INSTANCE_ID_TAG) continue;
+				attribute_count += 1;
+			}
+
+			// cba to support anything other than string
+			buffer.writeUInt8(attribute_count);
+			for (const [key, value] of attributes) {
+				if (key === INSTANCE_ID_TAG) continue;
+				buffer.writeString(key);
+				buffer.writeString(tostring(value));
+			}
 		}
 
 		// write properties
@@ -81,12 +100,22 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		let class_name_index = buffer.readUInt8();
 		let name = buffer.readString();
 
+		let attributes: { [index: string]: string } = {};
+		let attribute_count = buffer.readUInt8();
+		for (let i = 0; i < attribute_count; i++) {
+			let key = buffer.readString();
+			let value = buffer.readString();
+			attributes[key] = value;
+		}
+
 		let class_name = INSTANCE_CLASS_MAP[class_name_index];
 		let properties_to_write = INSTANCE_PROPERTY_MAP[class_name as instanceClass];
 		if (!properties_to_write) throw `can't decode: unsupported instance type index: ${class_name_index}`;
 
 		let instance = new Instance(class_name as keyof CreatableInstances);
 		instance.Name = name;
+
+		for (const [key, value] of pairs(attributes)) instance.SetAttribute(key as string, value);
 
 		InstanceReferenceSerialization.add_instance_to_cache(instance, instance_id);
 
