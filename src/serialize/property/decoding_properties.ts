@@ -48,5 +48,7 @@ export const INDEX_IDS: { [index: string]: number | undefined } = {
 	StudsPerTileU: 31,
 	StudsPerTileV: 32,
 	Texture: 33,
-	ZIndex: 35,
+	ZIndex: 34,
+	Shape: 35,
+	Face: 36,
 };

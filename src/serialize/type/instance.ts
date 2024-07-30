@@ -79,7 +79,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 		// write children
 		for (const [_, value] of pairs(instance.GetChildren())) {
-			buffer.writeUInt8(SerializeInstanceDeclaration.id);
+			buffer.writeUnsigned(4, SerializeInstanceDeclaration.id);
 			SerializeInstanceDeclaration.write(
 				{
 					position: {

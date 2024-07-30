@@ -22,12 +22,12 @@ let serializers = [
 ];
 
 export function WRITE_MODULE<T>(module: Serializer<T>, buffer: BitBuffer, data: T) {
-	buffer.writeUInt8(module.id);
+	buffer.writeUnsigned(4, module.id);
 	module.write(data, buffer);
 }
 
 export function DECODE_MODULE<T>(file: Modfile.file, buffer: BitBuffer): boolean | undefined {
-	let id = buffer.readUInt8();
+	let id = buffer.readUnsigned(4);
 
 	if (!id) return;
 

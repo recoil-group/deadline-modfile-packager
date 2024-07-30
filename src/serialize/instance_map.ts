@@ -75,6 +75,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 
 	Part: {
 		...BASEPART,
+		Shape: "EnumItem",
 	},
 	WedgePart: {
 		...BASEPART,
@@ -118,6 +119,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Texture: "string",
 		Transparency: "number",
 		ZIndex: "number",
+		Face: "EnumItem",
 	},
 	PointLight: {
 		...LIGHT,
