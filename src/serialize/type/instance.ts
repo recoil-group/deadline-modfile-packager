@@ -51,6 +51,17 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			}
 		}
 
+		// write tags
+		{
+			let tags = instance.GetTags() as string[];
+
+			// cba to support anything other than string
+			buffer.writeUInt8(tags.size());
+			for (const [_, value] of tags) {
+				buffer.writeString(value);
+			}
+		}
+
 		// write properties
 		let default_instance = new Instance(instance.ClassName as keyof CreatableInstances);
 		let property_count = 0;
@@ -104,11 +115,19 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		if (!simple_name) name = buffer.readString();
 
 		let attributes: { [index: string]: string } = {};
+		let tags: string[] = [];
+
 		let attribute_count = buffer.readUInt8();
 		for (let i = 0; i < attribute_count; i++) {
 			let key = buffer.readString();
 			let value = buffer.readString();
 			attributes[key] = value;
+		}
+
+		let tag_count = buffer.readUInt8();
+		for (let i = 0; i < tag_count; i++) {
+			let tag = buffer.readString();
+			tags.push(tag);
 		}
 
 		let class_name = INSTANCE_CLASS_MAP[class_name_index];
@@ -119,6 +138,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		instance.Name = name;
 
 		for (const [key, value] of pairs(attributes)) instance.SetAttribute(key as string, value);
+		for (const [_, value] of pairs(tags)) instance.AddTag(value);
 
 		InstanceReferenceSerialization.add_instance_to_cache(instance, instance_id);
 
