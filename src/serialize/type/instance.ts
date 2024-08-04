@@ -131,7 +131,6 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 		const saved_size = buffer.readUInt32();
 		for (let i = 0; i < saved_size; i++) {
 			let value = decode_instance_property(buffer);
-			print(i, value);
 			data_to_read.saved_property_values.set(i, value);
 		}
 

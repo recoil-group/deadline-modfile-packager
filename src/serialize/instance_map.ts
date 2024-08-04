@@ -162,7 +162,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 	},
 	Attachment: {
 		Visible: "boolean",
-		WorldCFrame: "CFrame",
+		CFrame: "CFrame",
 	},
 	UICorner: {},
 	WeldConstraint: {
