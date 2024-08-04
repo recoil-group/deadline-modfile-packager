@@ -110,7 +110,7 @@ export namespace Modfile {
 let next_instance_id = 0;
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
-	export const PACKAGER_VERSION = "0.23.0-dev-2";
+	export const PACKAGER_VERSION = "0.23.0-dev-3";
 
 	export function req_script_as<T>(root: Instance, name: string): T {
 		let module = root.FindFirstChild(name);

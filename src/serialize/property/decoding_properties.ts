@@ -13,7 +13,6 @@ export const ENCODE_VALUE_IDS: { [index in supportedEncoderValueType]: number } 
 	Vector2: 9,
 };
 
-// put property names here to optimize them
 export const INDEX_IDS: { [index: string]: number | undefined } = {
 	TextureID: 0,
 	MeshId: 1,

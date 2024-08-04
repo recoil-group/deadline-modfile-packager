@@ -37,6 +37,5 @@ export const SerializeAttachmentDeclaration: Serializer<Modfile.attachmentDeclar
 		if (!class_declaration) throw `attachment ${name} has no parent class declared`;
 
 		class_declaration.attachments.push(attachment_declaration);
-		return attachment_declaration;
 	},
 };

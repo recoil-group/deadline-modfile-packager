@@ -24,6 +24,7 @@ const BASEPART: propertyData = {
 	CanCollide: "boolean",
 	Locked: "boolean",
 	Size: "Vector3",
+	CastShadow: "boolean",
 };
 
 const LIGHT: propertyData = {
@@ -33,7 +34,6 @@ const LIGHT: propertyData = {
 };
 
 export const INSTANCE_CLASS_MAP = [
-	"Base",
 	"SpecialMesh",
 	"Model",
 	"Folder",
@@ -52,21 +52,31 @@ export const INSTANCE_CLASS_MAP = [
 	"PointLight",
 	"SpotLight",
 	"SurfaceLight",
+	"ParticleEmitter",
+	"Trail",
+	"Beam",
+	"Fire",
 	"Decal",
+	"BlockMesh",
 ] as const;
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
 
 // https://pastebin.com/raw/TFSU2s5e todo
 export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } = {
-	Base: {
-		Name: "string",
-	},
-
 	// replacement for MeshParts
 	SpecialMesh: {
 		TextureId: "string",
 		MeshId: "string",
+		MeshType: "EnumItem",
+		Offset: "Vector3",
+		Scale: "Vector3",
+		VertexColor: "Color3",
+	},
+
+	BlockMesh: {
+		VertexColor: "Color3",
+		Offset: "Vector3",
 		Scale: "Vector3",
 	},
 
@@ -91,6 +101,14 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 	SurfaceGui: {
 		ZOffset: "number",
 		Face: "EnumItem",
+		PixelsPerStud: "number",
+		LightInfluence: "number",
+		SizingMode: "EnumItem",
+		AlwaysOnTop: "boolean",
+		Active: "boolean",
+		Adornee: "Instance",
+		Enabled: "boolean",
+		MaxDistance: "number",
 	},
 	Frame: {
 		...GUI_OBJECT,
@@ -109,6 +127,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Text: "string",
 		TextSize: "number",
 		TextWrapped: "boolean",
+		TextScaled: "boolean",
 	},
 	Texture: {
 		Color3: "Color3",
@@ -137,6 +156,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 	Decal: {
 		Color3: "Color3",
 		Texture: "string",
+		Face: "EnumItem",
 		Transparency: "number",
 		ZIndex: "number",
 	},
@@ -149,4 +169,10 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Part0: "Instance",
 		Part1: "Instance",
 	},
+	Beam: {},
+	Fire: {},
+	ParticleEmitter: {
+		Texture: "string",
+	},
+	Trail: {},
 };
