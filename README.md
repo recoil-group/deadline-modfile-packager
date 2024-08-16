@@ -12,9 +12,16 @@ Main library for encoding and decoding modfiles to be used as importable mods in
     -   [ ] Flashlights
 -   [x] Custom maps
 
-# Public mods
+# Public mod sources
 
 -   [Official mods](https://github.com/blackshibe/deadline-insitux-core-scripts/tree/master/modfile)
+-   The Deadline server has a #modding channel
+
+# Other guides
+
+-   [Maps](docs/maps.md)
+-   [Attachments](docs/attachments.md)
+-   [Using terrain](docs/terrain.md)
 
 # How to
 

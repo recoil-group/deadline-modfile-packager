@@ -9,6 +9,7 @@ import { INSTANCE_ID_TAG } from "./util/constants";
 import { SerializeMapDeclaration } from "./serialize/type/map";
 import { Zlib } from "@rbxts/zlib";
 import { SerializeScriptDeclaration } from "./serialize/type/script";
+import { SerializeTerrainDeclaration } from "./serialize/type/terrain";
 
 // declared by the game itself
 // incomplete types
@@ -96,6 +97,8 @@ export namespace Modfile {
 		source: string;
 	};
 
+	export type terrainDeclaration = {};
+
 	export type mapDeclaration = {
 		instance_id: number; // ID of the root model instance
 		properties: Deadline.gameMapProperties;
@@ -150,6 +153,10 @@ export namespace ModfilePackager {
 				source: (autorun as unknown as { Source: string }).Source,
 			});
 		}
+
+		// WRITE_MODULE(SerializeTerrainDeclaration, encode_buffer, {
+		// 	source: "",
+		// });
 
 		const compressed = Zlib.Compress(encode_buffer.dumpString(), {
 			level: 9,
