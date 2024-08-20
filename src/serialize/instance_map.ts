@@ -58,6 +58,7 @@ export const INSTANCE_CLASS_MAP = [
 	"Fire",
 	"Decal",
 	"BlockMesh",
+	"Sound",
 ] as const;
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
@@ -153,6 +154,7 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Face: "EnumItem",
 		Angle: "number",
 	},
+
 	Decal: {
 		Color3: "Color3",
 		Texture: "string",
@@ -175,4 +177,16 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		Texture: "string",
 	},
 	Trail: {},
+	Sound: {
+		SoundId: "string",
+		RollOffMaxDistance: "number",
+		RollOffMinDistance: "number",
+		RollOffMode: "EnumItem",
+		Looped: "boolean",
+		PlaybackRegionsEnabled: "boolean",
+		PlaybackSpeed: "number",
+		Playing: "boolean",
+		TimePosition: "number",
+		Volume: "number",
+	},
 };
