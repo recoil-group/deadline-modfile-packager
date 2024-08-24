@@ -89,7 +89,10 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			buffer.writeUInt16(position.instance_id);
 
 			// optimization: index to the class instead of the class itself
-			buffer.writeUInt8(INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName));
+			const class_uint8 = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
+
+			if (class_uint8 === -1) throw `can't serialize: unsupported instance type: ${instance.ClassName}`;
+			buffer.writeUInt8(class_uint8);
 
 			// write attributes
 			let attributes = instance.GetAttributes();
