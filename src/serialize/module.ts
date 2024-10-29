@@ -6,6 +6,7 @@ import { SerializeInstanceDeclaration } from "./type/instance";
 import { SerializeMetadataDeclaration } from "./type/metadata";
 import { SerializeMapDeclaration } from "./type/map";
 import { SerializeScriptDeclaration } from "./type/script";
+import { SerializeLightingPresetDeclaration } from "./type/lighting_preset";
 
 export type Serializer<T> = {
 	write: (arg: T, buffer: BitBuffer) => void;
@@ -21,6 +22,7 @@ let serializers = [
 	SerializeInstanceDeclaration,
 	SerializeMapDeclaration,
 	SerializeScriptDeclaration,
+	SerializeLightingPresetDeclaration,
 ];
 
 export function WRITE_MODULE<T>(module: Serializer<T>, buffer: BitBuffer, data: T) {
