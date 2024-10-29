@@ -1,9 +1,10 @@
 import { Modfile } from "../..";
 import { Serializer } from "../module";
+import { SerializeId } from "../types";
 
 export const SerializeClassDeclaration: Serializer<Modfile.classDeclaration> = {
 	name: "Class",
-	id: 2,
+	id: SerializeId.Class,
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 	},

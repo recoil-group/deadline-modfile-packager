@@ -1,9 +1,10 @@
 import { Modfile } from "../..";
 import { Serializer } from "../module";
+import { SerializeId } from "../types";
 
 export const SerializeMetadataDeclaration: Serializer<Modfile.metadataDeclaration> = {
 	name: "Metadata",
-	id: 3,
+	id: SerializeId.Metadata,
 	write: (declaration, buffer) => {
 		buffer.writeString(declaration.name);
 		buffer.writeString(declaration.description);

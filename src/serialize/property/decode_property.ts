@@ -1,6 +1,6 @@
 import BitBuffer from "@rbxts/bitbuffer";
 import { ENCODE_VALUE_IDS, INDEX_IDS } from "./decoding_properties";
-import { InstanceReferenceSerialization } from "./InstanceReferenceSerialization";
+import { InstanceReferenceSerialization } from "../../namespace/InstanceReferenceSerialization";
 import { INSTANCE_ID_TAG } from "../../util/constants";
 import { write_cframe } from "./util/write_cframe";
 

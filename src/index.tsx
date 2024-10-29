@@ -1,15 +1,12 @@
 import BitBuffer from "@rbxts/bitbuffer";
 import { DECODE_MODULE, WRITE_MODULE } from "./serialize/module";
-import { SerializeAttachmentDeclaration } from "./serialize/type/attachment";
-import { SerializeClassDeclaration } from "./serialize/type/class";
-import { SerializeInstanceDeclaration } from "./serialize/type/instance";
 import { SerializeMetadataDeclaration } from "./serialize/type/metadata";
-import { InstanceReferenceSerialization } from "./serialize/property/InstanceReferenceSerialization";
-import { INSTANCE_ID_TAG } from "./util/constants";
-import { SerializeMapDeclaration } from "./serialize/type/map";
+import { InstanceReferenceSerialization } from "./namespace/InstanceReferenceSerialization";
 import { Zlib } from "@rbxts/zlib";
 import { SerializeScriptDeclaration } from "./serialize/type/script";
-import { SerializeTerrainDeclaration } from "./serialize/type/terrain";
+import { require_script_as } from "./util/require_script_as";
+import { InstanceId } from "./namespace/InstanceId";
+import { Encode } from "./namespace/Encode";
 
 // declared by the game itself
 // incomplete types
@@ -65,6 +62,12 @@ export namespace Modfile {
 		class_declarations: Modfile.classDeclaration[];
 		instance_declarations: Modfile.instanceDeclaration[];
 		script_declarations: Modfile.scriptDeclaration[];
+		lighting_preset_declarations: Modfile.lightingPreset[];
+	};
+
+	export type lightingPreset = {
+		name: string;
+		data: unknown; // who cares
 	};
 
 	export type metadataDeclaration = {
@@ -110,30 +113,18 @@ export namespace Modfile {
 	};
 }
 
-let next_instance_id = 0;
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
 	// TODO: split actual packager version from this so that the version can change without breaking all the mods
 	export const PACKAGER_VERSION = "0.23.0-dev-3";
 
-	export function req_script_as<T>(root: Instance, name: string): T {
-		let module = root.FindFirstChild(name);
-
-		if (!module) throw `Error while requiring ${name} inside ${root.GetFullName()} (it doesn't exist)`;
-
-		if (!module.IsA("ModuleScript"))
-			throw `Error while requiring ${name} inside ${root.GetFullName()} (it's not a modulescript)`;
-
-		return require(module) as T;
-	}
-
 	export function encode(model: Instance): string {
-		next_instance_id = 0;
+		InstanceId.reset();
 
 		let encode_buffer = BitBuffer("");
 		encode_buffer.writeString(PACKAGER_VERSION);
 
-		let properties = req_script_as<Modfile.properties>(model, "info");
+		let properties = require_script_as<Modfile.properties>(model, "info");
 		WRITE_MODULE(SerializeMetadataDeclaration, encode_buffer, {
 			name: properties.name || "No name",
 			description: properties.description || "No description",
@@ -142,10 +133,13 @@ export namespace ModfilePackager {
 		});
 
 		let attachments = model.FindFirstChild("attachments");
-		if (attachments) encode_attachments(attachments, encode_buffer);
+		if (attachments) Encode.attachments(attachments, encode_buffer);
 
 		let maps = model.FindFirstChild("maps");
-		if (maps) encode_maps(maps, encode_buffer);
+		if (maps) Encode.maps(maps, encode_buffer);
+
+		let presets = model.FindFirstChild("lighting_presets");
+		if (presets) Encode.lighting_presets(presets, encode_buffer);
 
 		let autorun = model.FindFirstChild("autorun") as ModuleScript | undefined;
 		if (autorun) {
@@ -154,10 +148,6 @@ export namespace ModfilePackager {
 				source: (autorun as unknown as { Source: string }).Source,
 			});
 		}
-
-		// WRITE_MODULE(SerializeTerrainDeclaration, encode_buffer, {
-		// 	source: "",
-		// });
 
 		const compressed = Zlib.Compress(encode_buffer.dumpString(), {
 			level: 9,
@@ -183,6 +173,7 @@ export namespace ModfilePackager {
 			instance_declarations: [],
 			map_declarations: [],
 			script_declarations: [],
+			lighting_preset_declarations: [],
 		};
 
 		if (file.version !== PACKAGER_VERSION)
@@ -193,94 +184,7 @@ export namespace ModfilePackager {
 		set_instance_parents(file);
 		InstanceReferenceSerialization.set_instance_ids();
 
-		print((tick() - start_time) * 1000, "ms to decode modfile");
-
 		return file;
-	}
-
-	function mark_instance_ids(model: Instance): void {
-		model.SetAttribute(INSTANCE_ID_TAG, next_instance_id);
-		model.GetDescendants().forEach((element) => {
-			next_instance_id += 1;
-			element.SetAttribute(INSTANCE_ID_TAG, next_instance_id);
-		});
-	}
-
-	function encode_maps(maps: Instance, buffer: BitBuffer): void {
-		let map_data = maps.GetChildren();
-
-		map_data.forEach((folder) => {
-			print(`maps/${folder.Name}`);
-
-			let data = folder.FindFirstChild("data");
-			if (!data) throw `${folder.Name} is missing a data model`;
-
-			mark_instance_ids(folder);
-			const data_id = data.GetAttribute(INSTANCE_ID_TAG) as number;
-
-			WRITE_MODULE(SerializeMapDeclaration, buffer, {
-				attachments: [],
-				instance_id: data_id,
-				properties: req_script_as<Deadline.gameMapProperties>(folder, "properties"),
-				instance: data,
-			});
-
-			WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
-				position: {
-					kind: "attachment_root",
-					instance_id: data_id,
-					parent_id: next_instance_id,
-				},
-				instance: data,
-			});
-		});
-	}
-
-	function encode_attachments(attachments: Instance, buffer: BitBuffer): void {
-		let attachment_classes = attachments.GetChildren();
-
-		attachment_classes.forEach((folder) => {
-			print(`attachments/${folder.Name}`);
-			WRITE_MODULE(SerializeClassDeclaration, buffer, {
-				attachments: [],
-				properties: {
-					name: folder.Name,
-				},
-			});
-
-			folder.GetChildren().forEach((attachment) => {
-				print(`attachments/${folder.Name}/${attachment.Name}`);
-				let model = attachment.FindFirstChild("model");
-				if (!model) throw `${attachment.Name} is missing a model`;
-
-				let properties = req_script_as<Deadline.attachmentProperties>(attachment, "properties");
-				let runtime_properties = req_script_as<Deadline.runtimeAttachmentProperties>(
-					attachment,
-					"runtime_properties",
-				);
-
-				mark_instance_ids(model);
-				const instance_id = model.GetAttribute(INSTANCE_ID_TAG) as number;
-
-				WRITE_MODULE(SerializeAttachmentDeclaration, buffer, {
-					instance_id: instance_id,
-					parent_class: folder.Name,
-					properties: properties,
-					runtime_properties: runtime_properties,
-				});
-
-				WRITE_MODULE(SerializeInstanceDeclaration, buffer, {
-					position: {
-						kind: "attachment_root",
-						instance_id: instance_id,
-						parent_id: next_instance_id,
-					},
-					instance: model,
-				});
-
-				next_instance_id += 1;
-			});
-		});
 	}
 
 	function set_instance_parents(modfile: Modfile.file): void {

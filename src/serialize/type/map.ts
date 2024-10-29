@@ -1,12 +1,13 @@
 import { Deadline, Modfile } from "../..";
 import { Serializer } from "../module";
+import { SerializeId } from "../types";
 
 export const SerializeMapDeclaration: Serializer<{
 	properties: Deadline.gameMapProperties;
 	instance_id: number;
 }> = {
 	name: "Map",
-	id: 5,
+	id: SerializeId.Map,
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 		bitbuffer.writeString(declaration.properties.code);

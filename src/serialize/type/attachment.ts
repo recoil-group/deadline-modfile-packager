@@ -1,11 +1,12 @@
 import { HttpService } from "@rbxts/services";
 import { Deadline, Modfile } from "../..";
 import { Serializer } from "../module";
+import { SerializeId } from "../types";
 
 // serializes the metadata about an attachment declaration
 export const SerializeAttachmentDeclaration: Serializer<Modfile.attachmentDeclaration> = {
 	name: "Attachment",
-	id: 1,
+	id: SerializeId.Attachment,
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 		bitbuffer.writeString(declaration.parent_class);

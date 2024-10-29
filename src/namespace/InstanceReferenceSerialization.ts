@@ -1,4 +1,4 @@
-import { forceIndex } from "./decode_property";
+import { forceIndex } from "../serialize/property/decode_property";
 
 type instancePropertyData = {
 	id: number;

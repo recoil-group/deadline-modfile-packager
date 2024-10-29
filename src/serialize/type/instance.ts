@@ -3,7 +3,8 @@ import { INSTANCE_ID_TAG } from "../../util/constants";
 import { INSTANCE_CLASS_MAP, INSTANCE_PROPERTY_MAP, instanceClass } from "../instance_map";
 import { Serializer } from "../module";
 import { decode_instance_property, write_instance_property } from "../property/decode_property";
-import { InstanceReferenceSerialization } from "../property/InstanceReferenceSerialization";
+import { InstanceReferenceSerialization } from "../../namespace/InstanceReferenceSerialization";
+import { SerializeId } from "../types";
 
 type whatever = { [index: string]: any };
 
@@ -64,7 +65,7 @@ function add_instance(data_to_write: serializeWritableData, declaration: Modfile
 
 export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaration> = {
 	name: "Instance",
-	id: 4,
+	id: SerializeId.Instance,
 	write: (start_declaration, buffer) => {
 		// optimization: write everything to a reference list to save space on duplicate data
 		const data_to_write: serializeWritableData = {

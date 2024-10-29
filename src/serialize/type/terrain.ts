@@ -1,6 +1,7 @@
 import { HttpService, RunService, Workspace } from "@rbxts/services";
 import { Deadline, Modfile } from "../..";
 import { Serializer } from "../module";
+import { SerializeId } from "../types";
 
 const MATERIAL_TO_INT = new Map<Enum.Material, number>([
 	[Enum.Material.Air, 0],
@@ -30,10 +31,8 @@ const MATERIAL_TO_INT = new Map<Enum.Material, number>([
 
 export const SerializeTerrainDeclaration: Serializer<Modfile.scriptDeclaration> = {
 	name: "Terrain",
-	id: 7,
+	id: SerializeId.Terrain,
 	write: (declaration, bitbuffer) => {
-		print("saving terrain");
-
 		let region = Workspace.Terrain.MaxExtents;
 
 		let last_timeout = os.clock();
@@ -61,6 +60,7 @@ export const SerializeTerrainDeclaration: Serializer<Modfile.scriptDeclaration> 
 					bitbuffer.writeUnsigned(8, material_int);
 					let value = math.floor((occupancy ?? 1) * 16);
 					if (value > 16) print(value);
+
 					bitbuffer.writeUnsigned(5, (occupancy ?? 1) * 16);
 				}
 			}
