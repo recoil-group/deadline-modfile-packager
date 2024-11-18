@@ -7,6 +7,7 @@ import { SerializeScriptDeclaration } from "./serialize/type/script";
 import { require_script_as } from "./util/require_script_as";
 import { InstanceId } from "./namespace/InstanceId";
 import { Encode } from "./namespace/Encode";
+import { RunService } from "@rbxts/services";
 
 // declared by the game itself
 // incomplete types
@@ -159,8 +160,6 @@ export namespace ModfilePackager {
 	}
 
 	export function decode_to_modfile(input: string): string | Modfile.file {
-		const start_time = tick();
-
 		const import_buffer = BitBuffer();
 		import_buffer.writeBase64(input);
 
@@ -180,7 +179,16 @@ export namespace ModfilePackager {
 			return `invalid package version. imported mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}. The mod you're using is likely too outdated to be used in deadline as-is. Look for a newer version.`;
 
 		InstanceReferenceSerialization.reset_instance_cache();
-		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {}
+
+		let next_yield_time = tick() + 1;
+		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {
+			if (tick() > next_yield_time) {
+				// large mods cause timeout
+				next_yield_time = tick() + 1;
+				RunService.Heartbeat.Wait();
+			}
+		}
+
 		set_instance_parents(file);
 		InstanceReferenceSerialization.set_instance_ids();
 
