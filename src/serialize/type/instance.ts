@@ -5,6 +5,7 @@ import { Serializer } from "../module";
 import { decode_instance_property, write_instance_property } from "../property/decode_property";
 import { InstanceReferenceSerialization } from "../../namespace/InstanceReferenceSerialization";
 import { SerializeId } from "../types";
+import { wait_on_cooldown } from "../../util/cooldown";
 
 type whatever = { [index: string]: any };
 
@@ -134,12 +135,16 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 		const saved_size = buffer.readUInt32();
 		for (let i = 0; i < saved_size; i++) {
+			wait_on_cooldown();
+
 			let value = decode_instance_property(buffer);
 			data_to_read.saved_property_values.set(i, value);
 		}
 
 		const size = buffer.readUInt32();
 		for (let i = 0; i < size; i++) {
+			wait_on_cooldown();
+
 			// read id
 			let [parent_type] = buffer.readBits(1);
 			let parent_id = buffer.readUInt16();

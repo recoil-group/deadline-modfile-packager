@@ -7,7 +7,7 @@ import { SerializeScriptDeclaration } from "./serialize/type/script";
 import { require_script_as } from "./util/require_script_as";
 import { InstanceId } from "./namespace/InstanceId";
 import { Encode } from "./namespace/Encode";
-import { RunService } from "@rbxts/services";
+import { wait_on_cooldown } from "./util/cooldown";
 
 // declared by the game itself
 // incomplete types
@@ -180,13 +180,8 @@ export namespace ModfilePackager {
 
 		InstanceReferenceSerialization.reset_instance_cache();
 
-		let next_yield_time = tick() + 1;
 		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {
-			if (tick() > next_yield_time) {
-				// large mods cause timeout
-				next_yield_time = tick() + 1;
-				RunService.Heartbeat.Wait();
-			}
+			wait_on_cooldown();
 		}
 
 		set_instance_parents(file);
@@ -198,12 +193,17 @@ export namespace ModfilePackager {
 	function set_instance_parents(modfile: Modfile.file): void {
 		let { instance_declarations } = modfile;
 
+		// instance, children
+		let target_parents = new Map<number, Instance>();
+		for (const [_, parent] of pairs(instance_declarations)) {
+			target_parents.set(parent.position.instance_id, parent.instance);
+		}
+
 		for (const [_, child] of pairs(instance_declarations)) {
-			if (child.position.kind !== "child") continue;
-			for (const [_, parent] of pairs(instance_declarations)) {
-				if (parent === child) continue;
-				if (child.position.parent_id === parent.position.instance_id) child.instance.Parent = parent.instance;
-			}
+			wait_on_cooldown();
+
+			const instance = target_parents.get(child.position.parent_id);
+			if (instance && instance !== child.instance) child.instance.Parent = instance;
 		}
 	}
 }
