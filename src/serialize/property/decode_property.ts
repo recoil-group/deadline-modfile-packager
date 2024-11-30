@@ -92,10 +92,10 @@ const ENCODING_FUNCTIONS: {
 			if (instance_id === undefined) throw "no instance id found when serialziing";
 			if (!typeIs(instance_id, "number")) throw "invalid instance id when serializing";
 
-			buffer.writeUInt16(instance_id);
+			buffer.writeUInt32(instance_id);
 		},
 		(buffer) => ({
-			__IS_INSTANCE: buffer.readUInt16(),
+			__IS_INSTANCE: buffer.readUInt32(),
 		}),
 		// InstanceReferenceSerialization.schedule_instance_set(instance, index, buffer.readUInt16());
 	],
