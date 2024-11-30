@@ -7,6 +7,7 @@ import { SerializeScriptDeclaration } from "./serialize/type/script";
 import { require_script_as } from "./util/require_script_as";
 import { InstanceId } from "./namespace/InstanceId";
 import { Encode } from "./namespace/Encode";
+import { wait_on_cooldown } from "./util/cooldown";
 
 // declared by the game itself
 // incomplete types
@@ -159,8 +160,6 @@ export namespace ModfilePackager {
 	}
 
 	export function decode_to_modfile(input: string): string | Modfile.file {
-		const start_time = tick();
-
 		const import_buffer = BitBuffer();
 		import_buffer.writeBase64(input);
 
@@ -180,7 +179,11 @@ export namespace ModfilePackager {
 			return `invalid package version. imported mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}. The mod you're using is likely too outdated to be used in deadline as-is. Look for a newer version.`;
 
 		InstanceReferenceSerialization.reset_instance_cache();
-		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {}
+
+		while (DECODE_MODULE(file, decode_buffer) && decode_buffer.getLength() - decode_buffer.getPointer() > 8) {
+			wait_on_cooldown();
+		}
+
 		set_instance_parents(file);
 		InstanceReferenceSerialization.set_instance_ids();
 
@@ -190,12 +193,19 @@ export namespace ModfilePackager {
 	function set_instance_parents(modfile: Modfile.file): void {
 		let { instance_declarations } = modfile;
 
+		// instance, children
+		let target_parents = new Map<number, Instance>();
+		for (const [_, parent] of pairs(instance_declarations)) {
+			target_parents.set(parent.position.instance_id, parent.instance);
+		}
+
 		for (const [_, child] of pairs(instance_declarations)) {
-			if (child.position.kind !== "child") continue;
-			for (const [_, parent] of pairs(instance_declarations)) {
-				if (parent === child) continue;
-				if (child.position.parent_id === parent.position.instance_id) child.instance.Parent = parent.instance;
-			}
+			if (child.position.kind === "attachment_root") continue;
+
+			wait_on_cooldown();
+
+			const instance = target_parents.get(child.position.parent_id);
+			if (instance && instance !== child.instance) child.instance.Parent = instance;
 		}
 	}
 }
