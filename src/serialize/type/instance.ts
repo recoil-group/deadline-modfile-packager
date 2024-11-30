@@ -23,6 +23,8 @@ function find_in_map(map: Map<number, unknown>, value: unknown) {
 }
 
 function add_instance(data_to_write: serializeWritableData, declaration: Modfile.instanceDeclaration) {
+	wait_on_cooldown();
+
 	const property_map = new Map<string, number>();
 	const instance = declaration.instance;
 	const class_name = instance.ClassName as instanceClass;
@@ -87,8 +89,8 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 			// write id
 			buffer.writeBits(position.kind === "attachment_root" ? 1 : 0);
-			buffer.writeUInt16(position.parent_id);
-			buffer.writeUInt16(position.instance_id);
+			buffer.writeUInt32(position.parent_id);
+			buffer.writeUInt32(position.instance_id);
 
 			// optimization: index to the class instead of the class itself
 			const class_uint8 = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
@@ -123,7 +125,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			buffer.writeUnsigned(5, property_map.size());
 			for (const [key, value] of pairs(property_map)) {
 				buffer.writeString(key);
-				buffer.writeUInt16(value);
+				buffer.writeUInt32(value);
 			}
 		}
 	},

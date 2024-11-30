@@ -10,7 +10,7 @@ export const SerializeAttachmentDeclaration: Serializer<Modfile.attachmentDeclar
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 		bitbuffer.writeString(declaration.parent_class);
-		bitbuffer.writeUInt16(declaration.instance_id);
+		bitbuffer.writeUInt32(declaration.instance_id);
 
 		let properties = HttpService.JSONEncode(declaration.properties);
 		let runtime_properties = HttpService.JSONEncode(declaration.runtime_properties);
