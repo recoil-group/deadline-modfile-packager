@@ -200,6 +200,8 @@ export namespace ModfilePackager {
 		}
 
 		for (const [_, child] of pairs(instance_declarations)) {
+			if (child.position.kind === "attachment_root") continue;
+
 			wait_on_cooldown();
 
 			const instance = target_parents.get(child.position.parent_id);
