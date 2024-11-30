@@ -89,8 +89,8 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 			// write id
 			buffer.writeBits(position.kind === "attachment_root" ? 1 : 0);
-			buffer.writeUInt32(position.parent_id);
-			buffer.writeUInt32(position.instance_id);
+			buffer.writeUInt16(position.parent_id);
+			buffer.writeUInt16(position.instance_id);
 
 			// optimization: index to the class instead of the class itself
 			const class_uint8 = INSTANCE_CLASS_MAP.findIndex((value) => value === instance.ClassName);
@@ -125,7 +125,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			buffer.writeUnsigned(5, property_map.size());
 			for (const [key, value] of pairs(property_map)) {
 				buffer.writeString(key);
-				buffer.writeUInt32(value);
+				buffer.writeUInt16(value);
 			}
 		}
 	},

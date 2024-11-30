@@ -11,7 +11,7 @@ export const SerializeMapDeclaration: Serializer<{
 	write: (declaration, bitbuffer) => {
 		bitbuffer.writeString(declaration.properties.name);
 		bitbuffer.writeString(declaration.properties.code);
-		bitbuffer.writeUInt32(declaration.instance_id);
+		bitbuffer.writeUInt16(declaration.instance_id);
 		bitbuffer.writeString(declaration.properties.description);
 		bitbuffer.writeString(declaration.properties.lighting_preset);
 		bitbuffer.writeString(declaration.properties.sound_preset);
