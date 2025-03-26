@@ -191,7 +191,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			for (const [index, value] of pairs(property_map)) {
 				let saved_value = data_to_read.saved_property_values.get(value);
 
-				if (typeIs(saved_value, "table") && ((saved_value as whatever).__IS_INSTANCE as number)) {
+				if (typeIs(saved_value, "table") && ((saved_value as whatever).__IS_INSTANCE as number) !== undefined) {
 					InstanceReferenceSerialization.schedule_instance_set(
 						instance,
 						index,
