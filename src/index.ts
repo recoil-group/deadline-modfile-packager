@@ -117,7 +117,7 @@ export namespace Modfile {
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
 	// TODO: split actual packager version from this so that the version can change without breaking all the mods
-	export const PACKAGER_VERSION = "0.23.0-dev-4";
+	export const PACKAGER_VERSION = "0.23.0-dev-3";
 
 	export function encode(model: Instance): string {
 		InstanceId.reset();
