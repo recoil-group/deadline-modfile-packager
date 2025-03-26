@@ -34,6 +34,9 @@ export namespace Encode {
 					"runtime_properties",
 				);
 
+				// autofilled by the game
+				properties.name = attachment.Name;
+
 				InstanceId.mark_instance(model);
 				const instance_id = model.GetAttribute(INSTANCE_ID_TAG) as number;
 

@@ -59,6 +59,9 @@ export const INSTANCE_CLASS_MAP = [
 	"Decal",
 	"BlockMesh",
 	"Sound",
+	"StringValue",
+	"IntValue",
+	"BoolValue",
 ] as const;
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
@@ -97,6 +100,18 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 		C1: "CFrame",
 		Part0: "Instance",
 		Part1: "Instance",
+	},
+
+	StringValue: {
+		Value: "string",
+	},
+
+	BoolValue: {
+		Value: "boolean",
+	},
+
+	IntValue: {
+		Value: "number",
 	},
 
 	SurfaceGui: {
