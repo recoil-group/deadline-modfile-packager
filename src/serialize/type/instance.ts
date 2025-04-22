@@ -156,11 +156,11 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 			// read attributes
 			let attribute_count = buffer.readUnsigned(5);
-			let attributes: { [index: string]: string } = {};
+			let attributes: { [index: string]: unknown } = {};
 
 			for (let i = 0; i < attribute_count; i++) {
 				let key = buffer.readString();
-				let value = buffer.readString();
+				let value = decode_instance_property(buffer);
 				attributes[key] = value;
 			}
 
@@ -184,7 +184,7 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 
 			const instance = new Instance(class_name as keyof CreatableInstances);
 
-			for (const [key, value] of pairs(attributes)) instance.SetAttribute(key as string, value);
+			for (const [key, value] of pairs(attributes)) instance.SetAttribute(key as string, value as any);
 			for (const [_, value] of pairs(tags)) instance.AddTag(value);
 			for (const [index, value] of pairs(property_map)) {
 				let saved_value = data_to_read.saved_property_values.get(value);
