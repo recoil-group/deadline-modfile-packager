@@ -112,13 +112,11 @@ export const SerializeInstanceDeclaration: Serializer<Modfile.instanceDeclaratio
 			for (const [key, value] of attributes) {
 				if (key === INSTANCE_ID_TAG) continue;
 				buffer.writeString(key);
-				buffer.writeString(tostring(value));
+				write_instance_property(buffer, value);
 			}
 
 			// write tags
 			let tags = instance.GetTags() as string[];
-
-			// cba to support anything other than string
 			buffer.writeUnsigned(5, tags.size());
 			for (const tag of tags) buffer.writeString(tag);
 

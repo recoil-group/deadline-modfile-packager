@@ -116,14 +116,14 @@ export namespace Modfile {
 
 export namespace ModfilePackager {
 	// modifying binary data to change the version may have side effects, reexport your mods with the new version instead
-	// TODO: split actual packager version from this so that the version can change without breaking all the mods
-	export const PACKAGER_VERSION = "0.23.0-dev-3";
+	export const PACKAGER_FORMAT_VERSION = "0.24.0";
+	export const PLUGIN_VERSION = "1.0.0";
 
 	export function encode(model: Instance): string {
 		InstanceId.reset();
 
 		let encode_buffer = BitBuffer("");
-		encode_buffer.writeString(PACKAGER_VERSION);
+		encode_buffer.writeString(PACKAGER_FORMAT_VERSION);
 
 		let properties = require_script_as<Modfile.properties>(model, "info");
 		WRITE_MODULE(SerializeMetadataDeclaration, encode_buffer, {
@@ -175,8 +175,8 @@ export namespace ModfilePackager {
 			lighting_preset_declarations: [],
 		};
 
-		if (file.version !== PACKAGER_VERSION)
-			return `invalid package version. imported mod is version ${file.version}, but packager uses ${PACKAGER_VERSION}. The mod you're using is likely too outdated to be used in deadline as-is. Look for a newer version.`;
+		if (file.version !== PACKAGER_FORMAT_VERSION)
+			return `invalid package version. imported mod is version ${file.version}, but packager uses ${PACKAGER_FORMAT_VERSION}. The mod you're using is likely too outdated to be used in deadline as-is. Look for a newer version.`;
 
 		InstanceReferenceSerialization.reset_instance_cache();
 

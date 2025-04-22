@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/dl-modfile-packager",
-	"version": "0.23.0-dev-4",
+	"version": "0.24.0",
 	"description": "",
 	"main": "out/init.lua",
 	"scripts": {
