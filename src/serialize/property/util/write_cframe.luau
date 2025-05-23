@@ -19,10 +19,10 @@ local function writeCFrame(buffer, cf: CFrame)
 	local rightNormal, upNormal
 	for i = 0, 5 do
 		local v = NORMAL_ID_VECTORS[i]
-		if 1 - v:Dot(rightVector) < 0.001 then
+		if 1 - v:Dot(rightVector) < 0.0001 then
 			rightNormal = i
 		end
-		if 1 - v:Dot(upVector) < 0.001 then
+		if 1 - v:Dot(upVector) < 0.0001 then
 			upNormal = i
 		end
 	end
