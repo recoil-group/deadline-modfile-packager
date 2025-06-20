@@ -11,6 +11,9 @@ export const ENCODE_VALUE_IDS: { [index in supportedEncoderValueType]: number } 
 	Color3: 7,
 	UDim2: 8,
 	Vector2: 9,
+	ColorSequence: 10,
+	NumberSequence: 11,
+	NumberRange: 12,
 };
 
 export const INDEX_IDS: { [index: string]: number | undefined } = {

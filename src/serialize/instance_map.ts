@@ -2,6 +2,12 @@ import { supportedEncoderValueType } from "./property/decode_property";
 
 type propertyData = { [index: string]: supportedEncoderValueType } | undefined;
 
+// MASSIVE TODO
+// This map was made originally because I didn't want to include additional dependencies
+// and to have control over what gets exported for security
+// but it's getting kind of annoying
+// https://pastebin.com/raw/TFSU2s5e todo
+
 // TODO do this procedurally
 const GUI_OBJECT: propertyData = {
 	Position: "UDim2",
@@ -66,7 +72,6 @@ export const INSTANCE_CLASS_MAP = [
 
 export type instanceClass = (typeof INSTANCE_CLASS_MAP)[number];
 
-// https://pastebin.com/raw/TFSU2s5e todo
 export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } = {
 	// replacement for MeshParts
 	SpecialMesh: {
@@ -189,9 +194,57 @@ export const INSTANCE_PROPERTY_MAP: { [index in instanceClass]: propertyData } =
 	Beam: {},
 	Fire: {},
 	ParticleEmitter: {
+		Brightness: "number",
+		FlipbookFramerate: "NumberRange",
+		FlipbookMode: "EnumItem",
+		FlipbookStartRandom: "boolean",
+		Color: "ColorSequence",
+		LightEmission: "number",
+		LightInfluence: "number",
+		Orientation: "EnumItem",
+		Size: "NumberSequence",
+		Squash: "NumberSequence",
 		Texture: "string",
+		Transparency: "NumberSequence",
+		ZOffset: "number",
+
+		EmissionDirection: "EnumItem",
+		Enabled: "boolean",
+		Lifetime: "NumberSequence",
+		Rate: "number",
+		Rotation: "NumberRange",
+		RotSpeed: "NumberRange",
+		Speed: "NumberRange",
+		SpreadAngle: "NumberRange",
+
+		Shape: "EnumItem",
+		ShapeInOut: "EnumItem",
+		ShapeStyle: "EnumItem",
+
+		FlipbookLayout: "EnumItem",
+		Acceleration: "Vector3",
+		Drag: "number",
+		LockedToPart: "boolean",
+		TimeScale: "number",
+		VelocityInheritance: "number",
+		WindAffectsDrag: "boolean",
 	},
-	Trail: {},
+	Trail: {
+		Color: "ColorSequence",
+		LightEmission: "number",
+		LightInfluence: "number",
+		Texture: "string",
+		TextureLength: "number",
+		TextureMode: "EnumItem",
+		ZOffset: "number",
+
+		Enabled: "boolean",
+		Lifetime: "NumberRange",
+		MinLength: "number",
+		MaxLength: "number",
+		WidthScale: "NumberSequence",
+		VelocityScale: "number",
+	},
 	Sound: {
 		SoundId: "string",
 		RollOffMaxDistance: "number",

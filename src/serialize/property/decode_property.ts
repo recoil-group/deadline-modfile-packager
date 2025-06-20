@@ -14,7 +14,10 @@ export type supportedEncoderValueType =
 	| "Instance"
 	| "UDim2"
 	| "Color3"
-	| "Vector2";
+	| "Vector2"
+	| "NumberSequence"
+	| "ColorSequence"
+	| "NumberRange";
 
 export type forceIndex<T> = { [index: string]: T };
 
@@ -98,6 +101,35 @@ const ENCODING_FUNCTIONS: {
 			__IS_INSTANCE: buffer.readUInt32(),
 		}),
 		// InstanceReferenceSerialization.schedule_instance_set(instance, index, buffer.readUInt16());
+	],
+	NumberSequence: [
+		(value) => typeIs(value, "NumberSequence"),
+		(buffer, value) => {
+			let sequence = value as NumberSequence;
+			buffer.writeNumberSequence(sequence);
+		},
+		(buffer) => buffer.readNumberSequence(),
+	],
+	ColorSequence: [
+		(value) => typeIs(value, "ColorSequence"),
+		(buffer, value) => {
+			let sequence = value as ColorSequence;
+			buffer.writeColorSequence(sequence);
+		},
+		(buffer) => buffer.readColorSequence(),
+	],
+	NumberRange: [
+		(value) => typeIs(value, "NumberRange"),
+		(buffer, value) => {
+			let range = value as NumberRange;
+			buffer.writeFloat16(range.Min);
+			buffer.writeFloat16(range.Max);
+		},
+		(buffer) => {
+			let min = buffer.readFloat16();
+			let max = buffer.readFloat16();
+			return new NumberRange(min, max);
+		},
 	],
 };
 
