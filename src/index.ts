@@ -60,6 +60,7 @@ export namespace Modfile {
 		info?: Modfile.metadataDeclaration;
 		version: string;
 		map_declarations: Modfile.mapDeclaration[];
+		terrain_declarations: Modfile.terrainDeclaration[];
 		class_declarations: Modfile.classDeclaration[];
 		instance_declarations: Modfile.instanceDeclaration[];
 		script_declarations: Modfile.scriptDeclaration[];
@@ -101,7 +102,11 @@ export namespace Modfile {
 		source: string;
 	};
 
-	export type terrainDeclaration = {};
+	export type terrainDeclaration = {
+		min: Vector3;
+		max: Vector3;
+		data: Map<string, { material: Enum.Material; occupancy: number }>;
+	};
 
 	export type mapDeclaration = {
 		instance_id: number; // ID of the root model instance
@@ -171,6 +176,7 @@ export namespace ModfilePackager {
 			class_declarations: [],
 			instance_declarations: [],
 			map_declarations: [],
+			terrain_declarations: [],
 			script_declarations: [],
 			lighting_preset_declarations: [],
 		};

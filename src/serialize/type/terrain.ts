@@ -29,44 +29,76 @@ const MATERIAL_TO_INT = new Map<Enum.Material, number>([
 	[Enum.Material.WoodPlanks, 22],
 ]);
 
-export const SerializeTerrainDeclaration: Serializer<Modfile.scriptDeclaration> = {
+export const SerializeTerrainDeclaration: Serializer<Modfile.terrainDeclaration> = {
 	name: "Terrain",
 	id: SerializeId.Terrain,
 	write: (declaration, bitbuffer) => {
-		let region = Workspace.Terrain.MaxExtents;
-
 		let last_timeout = os.clock();
 
-		bitbuffer.writeSigned(64, region.Min.X);
-		bitbuffer.writeSigned(64, region.Min.Y);
-		bitbuffer.writeSigned(64, region.Min.Z);
-		bitbuffer.writeSigned(64, region.Max.X);
-		bitbuffer.writeSigned(64, region.Max.Y);
-		bitbuffer.writeSigned(64, region.Max.Z);
-		for (const x of $range(region.Min.X, region.Max.X)) {
-			for (const y of $range(region.Min.Y, region.Max.Y)) {
-				for (const z of $range(region.Min.Z, region.Max.Z)) {
+		bitbuffer.writeSigned(64, declaration.min.X);
+		bitbuffer.writeSigned(64, declaration.min.Y);
+		bitbuffer.writeSigned(64, declaration.min.Z);
+		bitbuffer.writeSigned(64, declaration.max.X);
+		bitbuffer.writeSigned(64, declaration.max.Y);
+		bitbuffer.writeSigned(64, declaration.max.Z);
+
+		for (let x = declaration.min.X; x <= declaration.max.X; x++) {
+			for (let y = declaration.min.Y; y <= declaration.max.Y; y++) {
+				for (let z = declaration.min.Z; z <= declaration.max.Z; z++) {
 					if (last_timeout + 0.5 < os.clock()) {
 						RunService.Heartbeat.Wait();
 						last_timeout = os.clock();
 					}
 
-					let region = new Region3(new Vector3(x, y, z), new Vector3(x + 4, y + 4, z + 4));
-					let [materials, occupancies] = Workspace.Terrain.ReadVoxels(region, 4);
+					const key = `${x},${y},${z}`;
+					const voxel = declaration.data.get(key);
 
-					let material_int = MATERIAL_TO_INT.get(materials[0][0][0]) ?? 0;
-					let occupancy = occupancies[0][0][0];
+					const materialInt = MATERIAL_TO_INT.get(voxel?.material ?? Enum.Material.Air) ?? 0;
+					const occupancy = voxel?.occupancy ?? 1;
+					const occupancyBits = math.floor(occupancy * 16);
 
-					bitbuffer.writeUnsigned(8, material_int);
-					let value = math.floor((occupancy ?? 1) * 16);
-					if (value > 16) print(value);
-
-					bitbuffer.writeUnsigned(5, (occupancy ?? 1) * 16);
+					bitbuffer.writeUnsigned(8, materialInt);
+					bitbuffer.writeUnsigned(5, occupancyBits);
 				}
 			}
 		}
 	},
 	decode: (modfile, buffer) => {
+		const INT_TO_MATERIAL = new Map<number, Enum.Material>();
+		for (const [material, int] of MATERIAL_TO_INT) {
+			INT_TO_MATERIAL.set(int, material);
+		}
+
+		const minX = buffer.readSigned(64);
+		const minY = buffer.readSigned(64);
+		const minZ = buffer.readSigned(64);
+		const maxX = buffer.readSigned(64);
+		const maxY = buffer.readSigned(64);
+		const maxZ = buffer.readSigned(64);
+
+		const terrainData = new Map<string, { material: Enum.Material; occupancy: number }>();
+
+		for (let x = minX; x <= maxX; x++) {
+			for (let y = minY; y <= maxY; y++) {
+				for (let z = minZ; z <= maxZ; z++) {
+					const materialInt = buffer.readUnsigned(8);
+					const occupancyBits = buffer.readUnsigned(5);
+
+					const material = INT_TO_MATERIAL.get(materialInt) ?? Enum.Material.Air;
+					const occupancy = occupancyBits / 16;
+
+					const key = `${x},${y},${z}`;
+					terrainData.set(key, { material, occupancy });
+				}
+			}
+		}
+
+		modfile.terrain_declarations.push({
+			min: new Vector3(minX, minY, minZ),
+			max: new Vector3(maxX, maxY, maxZ),
+			data: terrainData,
+		});
+
 		return modfile;
 	},
 };

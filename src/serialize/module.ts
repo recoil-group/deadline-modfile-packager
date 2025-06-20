@@ -7,6 +7,7 @@ import { SerializeMetadataDeclaration } from "./type/metadata";
 import { SerializeMapDeclaration } from "./type/map";
 import { SerializeScriptDeclaration } from "./type/script";
 import { SerializeLightingPresetDeclaration } from "./type/lighting_preset";
+import { SerializeTerrainDeclaration } from "./type/terrain";
 
 export type Serializer<T> = {
 	write: (arg: T, buffer: BitBuffer) => void;
@@ -21,6 +22,7 @@ let serializers = [
 	SerializeMetadataDeclaration,
 	SerializeInstanceDeclaration,
 	SerializeMapDeclaration,
+	SerializeTerrainDeclaration,
 	SerializeScriptDeclaration,
 	SerializeLightingPresetDeclaration,
 ];
