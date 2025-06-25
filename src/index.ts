@@ -64,6 +64,7 @@ export namespace Modfile {
 		instance_declarations: Modfile.instanceDeclaration[];
 		script_declarations: Modfile.scriptDeclaration[];
 		lighting_preset_declarations: Modfile.lightingPreset[];
+		terrain_declarations: Modfile.terrainDeclaration[];
 	};
 
 	export type lightingPreset = {
@@ -101,7 +102,11 @@ export namespace Modfile {
 		source: string;
 	};
 
-	export type terrainDeclaration = {};
+	export type terrainDeclaration = {
+		region: Region3;
+		occupancies: Array<Array<Array<number>>>;
+		materials: Array<Array<Array<Enum.Material>>>;
+	};
 
 	export type mapDeclaration = {
 		instance_id: number; // ID of the root model instance
@@ -122,10 +127,10 @@ export namespace ModfilePackager {
 	export function encode(model: Instance): string {
 		InstanceId.reset();
 
-		let encode_buffer = BitBuffer("");
+		const encode_buffer = BitBuffer("");
 		encode_buffer.writeString(PACKAGER_FORMAT_VERSION);
 
-		let properties = require_script_as<Modfile.properties>(model, "info");
+		const properties = require_script_as<Modfile.properties>(model, "info");
 		WRITE_MODULE(SerializeMetadataDeclaration, encode_buffer, {
 			name: properties.name || "No name",
 			description: properties.description || "No description",
@@ -133,16 +138,16 @@ export namespace ModfilePackager {
 			image: properties.image || "No image",
 		});
 
-		let attachments = model.FindFirstChild("attachments");
+		const attachments = model.FindFirstChild("attachments");
 		if (attachments) Encode.attachments(attachments, encode_buffer);
 
-		let maps = model.FindFirstChild("maps");
+		const maps = model.FindFirstChild("maps");
 		if (maps) Encode.maps(maps, encode_buffer);
 
-		let presets = model.FindFirstChild("lighting_presets");
+		const presets = model.FindFirstChild("lighting_presets");
 		if (presets) Encode.lighting_presets(presets, encode_buffer);
 
-		let autorun = model.FindFirstChild("autorun") as ModuleScript | undefined;
+		const autorun = model.FindFirstChild("autorun") as ModuleScript | undefined;
 		if (autorun) {
 			// wtf
 			WRITE_MODULE(SerializeScriptDeclaration, encode_buffer, {
@@ -166,13 +171,14 @@ export namespace ModfilePackager {
 		const contents = Zlib.Decompress(import_buffer.dumpString());
 		const decode_buffer = BitBuffer(contents);
 
-		let file: Modfile.file = {
+		const file: Modfile.file = {
 			version: decode_buffer.readString(),
 			class_declarations: [],
 			instance_declarations: [],
 			map_declarations: [],
 			script_declarations: [],
 			lighting_preset_declarations: [],
+			terrain_declarations: [],
 		};
 
 		if (file.version !== PACKAGER_FORMAT_VERSION)
@@ -191,10 +197,10 @@ export namespace ModfilePackager {
 	}
 
 	function set_instance_parents(modfile: Modfile.file): void {
-		let { instance_declarations } = modfile;
+		const { instance_declarations } = modfile;
 
 		// instance, children
-		let target_parents = new Map<number, Instance>();
+		const target_parents = new Map<number, Instance>();
 		for (const [_, parent] of pairs(instance_declarations)) {
 			target_parents.set(parent.position.instance_id, parent.instance);
 		}

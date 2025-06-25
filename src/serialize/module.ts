@@ -15,7 +15,7 @@ export type Serializer<T> = {
 	id: number; // must be unique
 };
 
-let serializers = [
+const serializers = [
 	SerializeAttachmentDeclaration,
 	SerializeClassDeclaration,
 	SerializeMetadataDeclaration,
@@ -31,11 +31,11 @@ export function WRITE_MODULE<T>(module: Serializer<T>, buffer: BitBuffer, data: 
 }
 
 export function DECODE_MODULE<T>(file: Modfile.file, buffer: BitBuffer): boolean | undefined {
-	let id = buffer.readUnsigned(4);
+	const id = buffer.readUnsigned(4);
 
 	if (id === undefined) return;
 
-	let serializer = serializers.find((value) => value.id === id);
+	const serializer = serializers.find((value) => value.id === id);
 	if (!serializer) throw `invalid module ID ${id}`;
 
 	serializer.decode(file, buffer);
