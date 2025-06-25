@@ -3,70 +3,83 @@ import { Deadline, Modfile } from "../..";
 import { Serializer } from "../module";
 import { SerializeId } from "../types";
 
-const MATERIAL_TO_INT = new Map<Enum.Material, number>([
-	[Enum.Material.Air, 0],
-	[Enum.Material.Asphalt, 1],
-	[Enum.Material.Basalt, 2],
-	[Enum.Material.Brick, 3],
-	[Enum.Material.Cobblestone, 4],
-	[Enum.Material.Concrete, 5],
-	[Enum.Material.CrackedLava, 6],
-	[Enum.Material.Glacier, 7],
-	[Enum.Material.Grass, 8],
-	[Enum.Material.Ground, 9],
-	[Enum.Material.Ice, 10],
-	[Enum.Material.LeafyGrass, 11],
-	[Enum.Material.Limestone, 12],
-	[Enum.Material.Mud, 13],
-	[Enum.Material.Pavement, 14],
-	[Enum.Material.Rock, 15],
-	[Enum.Material.Salt, 16],
-	[Enum.Material.Sand, 17],
-	[Enum.Material.Sandstone, 18],
-	[Enum.Material.Slate, 19],
-	[Enum.Material.Snow, 20],
-	[Enum.Material.Water, 21],
-	[Enum.Material.WoodPlanks, 22],
-]);
+const MATERIAL_TO_INT = new Map<Enum.Material, number>(
+	Enum.Material.GetEnumItems().map((material) => [material, material.Value]),
+);
 
-export const SerializeTerrainDeclaration: Serializer<Modfile.scriptDeclaration> = {
+const INT_TO_MATERIAL = new Map<number, Enum.Material>(
+	Enum.Material.GetEnumItems().map((material) => [material.Value, material]),
+);
+
+export const SerializeTerrainDeclaration: Serializer<{
+	region: Region3;
+	occupancies: ReadVoxelsArray<number>;
+	materials: ReadVoxelsArray<Enum.Material>;
+}> = {
 	name: "Terrain",
 	id: SerializeId.Terrain,
 	write: (declaration, bitbuffer) => {
-		let region = Workspace.Terrain.MaxExtents;
+		bitbuffer.writeRegion3(declaration.region);
 
-		let last_timeout = os.clock();
+		bitbuffer.writeUInt32(declaration.occupancies.size());
+		bitbuffer.writeUInt32(declaration.occupancies[0]?.size() ?? 0);
+		bitbuffer.writeUInt32(declaration.occupancies[0]?.[0]?.size() ?? 0);
 
-		bitbuffer.writeSigned(64, region.Min.X);
-		bitbuffer.writeSigned(64, region.Min.Y);
-		bitbuffer.writeSigned(64, region.Min.Z);
-		bitbuffer.writeSigned(64, region.Max.X);
-		bitbuffer.writeSigned(64, region.Max.Y);
-		bitbuffer.writeSigned(64, region.Max.Z);
-		for (const x of $range(region.Min.X, region.Max.X)) {
-			for (const y of $range(region.Min.Y, region.Max.Y)) {
-				for (const z of $range(region.Min.Z, region.Max.Z)) {
-					if (last_timeout + 0.5 < os.clock()) {
-						RunService.Heartbeat.Wait();
-						last_timeout = os.clock();
-					}
+		for (const x of $range(0, declaration.occupancies.size() - 1)) {
+			const x_occ = declaration.occupancies[x];
+			const x_mat = declaration.materials[x];
 
-					let region = new Region3(new Vector3(x, y, z), new Vector3(x + 4, y + 4, z + 4));
-					let [materials, occupancies] = Workspace.Terrain.ReadVoxels(region, 4);
+			for (const y of $range(0, x_occ.size() - 1)) {
+				const y_occ = x_occ[y];
+				const y_mat = x_mat[y];
 
-					let material_int = MATERIAL_TO_INT.get(materials[0][0][0]) ?? 0;
-					let occupancy = occupancies[0][0][0];
+				for (const z of $range(0, y_occ.size() - 1)) {
+					const occupancy = y_occ[z];
+					const material = y_mat[z];
 
-					bitbuffer.writeUnsigned(8, material_int);
-					let value = math.floor((occupancy ?? 1) * 16);
-					if (value > 16) print(value);
-
-					bitbuffer.writeUnsigned(5, (occupancy ?? 1) * 16);
+					bitbuffer.writeUInt32(material.Value);
+					bitbuffer.writeFloat64(occupancy);
 				}
 			}
 		}
 	},
 	decode: (modfile, buffer) => {
-		return modfile;
+		const region = buffer.readRegion3();
+
+		const x_size = buffer.readUInt32();
+		const y_size = buffer.readUInt32();
+		const z_size = buffer.readUInt32();
+
+		const occupancies: Array<Array<Array<number>>> = new Array(x_size);
+		const materials: Array<Array<Array<Enum.Material>>> = new Array(x_size);
+		for (const x of $range(0, x_size - 1)) {
+			const y_occ = new Array<Array<number>>(y_size);
+			const y_mat = new Array<Array<Enum.Material>>(y_size);
+
+			occupancies[x] = y_occ;
+			materials[x] = y_mat;
+
+			for (const y of $range(0, y_size - 1)) {
+				const z_occ = new Array<number>(z_size);
+				const z_mat = new Array<Enum.Material>(z_size);
+
+				y_occ[y] = z_occ;
+				y_mat[y] = z_mat;
+
+				for (const z of $range(0, z_size - 1)) {
+					const material = buffer.readUInt32();
+					const occupancy = buffer.readFloat64();
+
+					z_occ[z] = occupancy;
+					z_mat[z] = INT_TO_MATERIAL.get(material)!;
+				}
+			}
+		}
+
+		const declaration: Modfile.terrainDeclaration = { region, occupancies, materials };
+
+		modfile.terrain_declarations.push(declaration);
+
+		return declaration;
 	},
 };
