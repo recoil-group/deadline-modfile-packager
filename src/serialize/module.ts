@@ -7,6 +7,7 @@ import { SerializeMetadataDeclaration } from "./type/metadata";
 import { SerializeMapDeclaration } from "./type/map";
 import { SerializeScriptDeclaration } from "./type/script";
 import { SerializeLightingPresetDeclaration } from "./type/lighting_preset";
+import { SerializeTerrainDeclaration } from "./type/terrain";
 
 export type Serializer<T> = {
 	write: (arg: T, buffer: BitBuffer) => void;
@@ -23,6 +24,7 @@ const serializers = [
 	SerializeMapDeclaration,
 	SerializeScriptDeclaration,
 	SerializeLightingPresetDeclaration,
+	SerializeTerrainDeclaration,
 ];
 
 export function WRITE_MODULE<T>(module: Serializer<T>, buffer: BitBuffer, data: T) {

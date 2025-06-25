@@ -12,7 +12,7 @@ import { SerializeLightingPresetDeclaration } from "../serialize/type/lighting_p
 import { SerializeTerrainDeclaration } from "../serialize/type/terrain";
 import { Workspace } from "@rbxts/services";
 
-function isAxisAligned(part: BasePart): boolean {
+function is_axis_aligned(part: BasePart): boolean {
 	if (part.Orientation.X % 90 !== 0) return false;
 	if (part.Orientation.Y % 90 !== 0) return false;
 	if (part.Orientation.Z % 90 !== 0) return false;
@@ -99,24 +99,24 @@ export namespace Encode {
 				instance: data,
 			});
 
-			const terrainZones = folder.FindFirstChild("terrain");
-			if (terrainZones !== undefined) {
-				const terrainRegion = terrainZones.FindFirstChildWhichIsA("BasePart");
-				if (terrainRegion !== undefined) {
-					if (!isAxisAligned(terrainRegion)) {
+			const terrain_zones = folder.FindFirstChild("terrain");
+			if (terrain_zones !== undefined) {
+				const terrain_region = terrain_zones.FindFirstChildWhichIsA("BasePart");
+				if (terrain_region !== undefined) {
+					if (!is_axis_aligned(terrain_region)) {
 						warn(
-							`Terrain region ${terrainRegion.GetFullName()} is not aligned to the X, Y and Z axes! This will be skipped for terrain reading!`,
+							`Terrain region ${terrain_region.GetFullName()} is not aligned to the X, Y and Z axes! This will be skipped for terrain reading!`,
 						);
 					} else {
-						const voxelRegion = new Region3(
-							(terrainRegion.Position = terrainRegion.Size.div(2)),
-							terrainRegion.Position.add(terrainRegion.Size.div(2)),
+						const voxel_region = new Region3(
+							(terrain_region.Position = terrain_region.Size.div(2)),
+							terrain_region.Position.add(terrain_region.Size.div(2)),
 						).ExpandToGrid(4);
 
-						const [materials, occupancies] = Workspace.Terrain.ReadVoxels(voxelRegion, 4);
+						const [materials, occupancies] = Workspace.Terrain.ReadVoxels(voxel_region, 4);
 
 						WRITE_MODULE(SerializeTerrainDeclaration, buffer, {
-							region: voxelRegion,
+							region: voxel_region,
 							materials,
 							occupancies,
 						});
