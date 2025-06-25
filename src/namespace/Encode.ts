@@ -99,7 +99,7 @@ export namespace Encode {
 				instance: data,
 			});
 
-			const terrain_zones = folder.FindFirstChild("terrain");
+			const terrain_zones = data.FindFirstChild("terrain");
 			if (terrain_zones !== undefined) {
 				const terrain_region = terrain_zones.FindFirstChildWhichIsA("BasePart");
 				if (terrain_region !== undefined) {
